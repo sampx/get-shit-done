@@ -1195,15 +1195,16 @@ describe('websearch command', () => {
   const { cmdWebsearch } = require('../get-shit-done/bin/lib/commands.cjs');
   let origFetch;
   let origApiKey;
-  let origStdoutWrite;
+  let origWriteSync;
   let captured;
 
   beforeEach(() => {
     origFetch = global.fetch;
     origApiKey = process.env.BRAVE_API_KEY;
-    origStdoutWrite = process.stdout.write;
+    origWriteSync = fs.writeSync;
     captured = '';
-    process.stdout.write = (chunk) => { captured += chunk; return true; };
+    // output() uses fs.writeSync(1, data) since #1276 — mock it to capture output
+    fs.writeSync = (fd, data) => { if (fd === 1) captured += data; return Buffer.byteLength(String(data)); };
   });
 
   afterEach(() => {
@@ -1213,7 +1214,7 @@ describe('websearch command', () => {
     } else {
       delete process.env.BRAVE_API_KEY;
     }
-    process.stdout.write = origStdoutWrite;
+    fs.writeSync = origWriteSync;
   });
 
   test('returns available=false when BRAVE_API_KEY is unset', async () => {
