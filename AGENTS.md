@@ -6,12 +6,12 @@
 
 ## 1. 架构概览
 
-WSF 是一个 **npm 包**（`wsf-cc`），通过安装器将命令、Agent、模板、工作流和 hooks 部署到目标 AI coding 工具的目录中。
+WSF 通过安装器将命令、Agent、模板、工作流和 hooks 部署到目标 AI coding 工具的目录中。
 
 ### 核心组件关系
 
 ```
-npx wsf-cc  (bin/install.js)
+bin/install.js
   │
   ├── 检测 runtime (claude/opencode/gemini/codex)
   ├── 复制 assets 到目标目录:
@@ -244,7 +244,6 @@ npm run test:coverage   # 测试 + 覆盖率（≥70% lines）
 
 ```bash
 node bin/install.js --claude --local    # 安装到 ./.claude/
-# 测试完成后由 .gitignore 排除
 ```
 
 ### 新增命令模板
@@ -302,18 +301,9 @@ color: yellow
 - 单文件测试，无测试框架依赖
 - 安装器是纯 JS，无外部依赖
 
-**提交规范**：
-- 遵循 Conventional Commits：`feat:` / `fix:` / `docs:` / `chore:`
-- 版本语义：通过 `npm version` 自动更新
-
 **安全红线**：
 - **禁止提交**：`.env`、API 密钥、用户配置
 - **禁止修改**：上游命令/Agent 的核心逻辑除非有明确理由
-
-**Fork 管理**：
-- 本项目是 `sampx/wsf` fork
-- 修改优先同步上游功能，差异应有明确目的
-- 测试必须在修改前运行通过
 
 **Hooks 构建**：
 - hooks 源文件在 `hooks/`，构建后到 `hooks/dist/`
