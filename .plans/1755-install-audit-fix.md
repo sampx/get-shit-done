@@ -10,23 +10,23 @@ All changes in `bin/install.js` unless noted.
 **Line 5391-5392** — After `fs.copyFileSync`, add `fs.chmodSync(destFile, 0o755)` for `.sh` files.
 
 ### Fix 2: Fix Codex hook path and filename (CRITICAL)
-**Line 5485** — Change `gsd-update-check.js` to `gsd-check-update.js` and fix path from `get-shit-done/hooks/` to `hooks/`.
-**Line 5492** — Update dedup check to use `gsd-check-update`.
+**Line 5485** — Change `wsf-update-check.js` to `wsf-check-update.js` and fix path from `wsf/hooks/` to `hooks/`.
+**Line 5492** — Update dedup check to use `wsf-check-update`.
 
 ### Fix 3: Fix stale cache invalidation path (CRITICAL)
-**Line 5406** — Change from `path.join(path.dirname(targetDir), 'cache', ...)` to `path.join(os.homedir(), '.cache', 'gsd', 'gsd-update-check.json')`.
+**Line 5406** — Change from `path.join(path.dirname(targetDir), 'cache', ...)` to `path.join(os.homedir(), '.cache', 'wsf', 'wsf-update-check.json')`.
 
 ### Fix 4: Track .sh hooks in manifest (MEDIUM)
 **Line 4972** — Change filter from `file.endsWith('.js')` to `(file.endsWith('.js') || file.endsWith('.sh'))`.
 
-### Fix 5: Add gsd-workflow-guard.js to uninstall hook list (MEDIUM)
-**Line 4404** — Add `'gsd-workflow-guard.js'` to the `gsdHooks` array.
+### Fix 5: Add wsf-workflow-guard.js to uninstall hook list (MEDIUM)
+**Line 4404** — Add `'wsf-workflow-guard.js'` to the `wsfHooks` array.
 
 ### Fix 6: Add community hooks to uninstall settings.json cleanup (MEDIUM)
-**Lines 4453-4520** — Add filters for `gsd-session-state`, `gsd-validate-commit`, `gsd-phase-boundary` in the appropriate event cleanup blocks (SessionStart, PreToolUse, PostToolUse).
+**Lines 4453-4520** — Add filters for `wsf-session-state`, `wsf-validate-commit`, `wsf-phase-boundary` in the appropriate event cleanup blocks (SessionStart, PreToolUse, PostToolUse).
 
-### Fix 7: Remove phantom gsd-check-update.sh from uninstall list (LOW)
-**Line 4404** — Remove `'gsd-check-update.sh'` from `gsdHooks` array.
+### Fix 7: Remove phantom wsf-check-update.sh from uninstall list (LOW)
+**Line 4404** — Remove `'wsf-check-update.sh'` from `wsfHooks` array.
 
 ### Fix 8: Remove dead isCursor/isWindsurf branches in uninstall (LOW)
 Remove the unreachable duplicate `else if (isCursor)` and `else if (isWindsurf)` branches.
@@ -41,6 +41,6 @@ After the generic check, warn if expected `.sh` files are missing (non-fatal war
 - .sh files tracked in manifest
 - settings.json hook paths match installed files
 - uninstall removes community hooks from settings.json
-- uninstall removes gsd-workflow-guard.js
+- uninstall removes wsf-workflow-guard.js
 - Codex hook uses correct filename
 - Cache path resolves correctly

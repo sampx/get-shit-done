@@ -1,14 +1,14 @@
 {
-  "name": "get-shit-done-cc",
+  "name": "wsf",
   "version": "1.34.2",
   "description": "A meta-prompting, context engineering and spec-driven development system for Claude Code, OpenCode, Gemini and Codex by TÂCHES.",
   "bin": {
-    "get-shit-done-cc": "bin/install.js"
+    "wsf": "bin/install.js"
   },
   "files": [
     "bin",
     "commands",
-    "get-shit-done",
+    "wsf",
     "agents",
     "hooks",
     "scripts"
@@ -25,16 +25,6 @@
     "codex",
     "codex-cli"
   ],
-  "author": "TÂCHES",
-  "license": "MIT",
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/gsd-build/get-shit-done.git"
-  },
-  "homepage": "https://github.com/gsd-build/get-shit-done",
-  "bugs": {
-    "url": "https://github.com/gsd-build/get-shit-done/issues"
-  },
   "engines": {
     "node": ">=22.0.0"
   },
@@ -47,6 +37,6 @@
     "build:hooks": "node scripts/build-hooks.js",
     "prepublishOnly": "npm run build:hooks",
     "test": "node scripts/run-tests.cjs",
-    "test:coverage": "c8 --check-coverage --lines 70 --reporter text --include 'get-shit-done/bin/lib/*.cjs' --exclude 'tests/**' --all node scripts/run-tests.cjs"
+    "test:coverage": "c8 --check-coverage --lines 70 --reporter text --include 'wsf/bin/lib/*.cjs' --exclude 'tests/**' --all node scripts/run-tests.cjs"
   }
 }

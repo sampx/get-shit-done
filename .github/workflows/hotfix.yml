@@ -198,7 +198,7 @@ jobs:
         run: |
           # Point next to the stable release so @next never returns something
           # older than @latest. This prevents stale pre-release installs.
-          npm dist-tag add "get-shit-done-cc@${VERSION}" next 2>/dev/null || true
+          npm dist-tag add "wsf-cc@${VERSION}" next 2>/dev/null || true
           echo "✓ next dist-tag updated to v${VERSION}"
 
       - name: Verify publish
@@ -207,12 +207,12 @@ jobs:
           VERSION: ${{ inputs.version }}
         run: |
           sleep 10
-          PUBLISHED=$(npm view get-shit-done-cc@"$VERSION" version 2>/dev/null || echo "NOT_FOUND")
+          PUBLISHED=$(npm view wsf-cc@"$VERSION" version 2>/dev/null || echo "NOT_FOUND")
           if [ "$PUBLISHED" != "$VERSION" ]; then
             echo "::error::Published version verification failed. Expected $VERSION, got $PUBLISHED"
             exit 1
           fi
-          echo "✓ Verified: get-shit-done-cc@$VERSION is live on npm"
+          echo "✓ Verified: wsf-cc@$VERSION is live on npm"
 
       - name: Summary
         env:

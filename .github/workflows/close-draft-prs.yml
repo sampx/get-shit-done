@@ -29,7 +29,7 @@ jobs:
                 '',
                 'This project only accepts completed pull requests. Draft PRs are automatically closed.',
                 '',
-                '**Why?** GSD requires all PRs to be ready for review when opened \u2014 with tests passing, the correct PR template used, and a linked approved issue. Draft PRs bypass these quality gates and create review overhead.',
+                '**Why?** WSF requires all PRs to be ready for review when opened \u2014 with tests passing, the correct PR template used, and a linked approved issue. Draft PRs bypass these quality gates and create review overhead.',
                 '',
                 '### What to do instead',
                 '',

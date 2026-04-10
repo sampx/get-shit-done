@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * Copy GSD hooks to dist for installation.
+ * Copy WSF hooks to dist for installation.
  * Validates JavaScript syntax before copying to prevent shipping broken hooks.
  * See #1107, #1109, #1125, #1161 — a duplicate const declaration shipped
  * in dist and caused PostToolUse hook errors for all users.
@@ -15,16 +15,16 @@ const DIST_DIR = path.join(HOOKS_DIR, 'dist');
 
 // Hooks to copy (pure Node.js, no bundling needed)
 const HOOKS_TO_COPY = [
-  'gsd-check-update.js',
-  'gsd-context-monitor.js',
-  'gsd-prompt-guard.js',
-  'gsd-read-guard.js',
-  'gsd-statusline.js',
-  'gsd-workflow-guard.js',
+  'wsf-check-update.js',
+  'wsf-context-monitor.js',
+  'wsf-prompt-guard.js',
+  'wsf-read-guard.js',
+  'wsf-statusline.js',
+  'wsf-workflow-guard.js',
   // Community hooks (bash, opt-in via .planning/config.json hooks.community)
-  'gsd-session-state.sh',
-  'gsd-validate-commit.sh',
-  'gsd-phase-boundary.sh'
+  'wsf-session-state.sh',
+  'wsf-validate-commit.sh',
+  'wsf-phase-boundary.sh'
 ];
 
 /**

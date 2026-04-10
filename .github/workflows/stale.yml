@@ -21,13 +21,13 @@ jobs:
           stale-issue-message: >
             This issue has been inactive for 28 days. It will be closed in 14 days
             if there is no further activity. If this is still relevant, please comment
-            or update to the latest GSD version and retest.
+            or update to the latest WSF version and retest.
           stale-pr-message: >
             This PR has been inactive for 28 days. It will be closed in 14 days
             if there is no further activity.
           close-issue-message: >
             Closed due to inactivity. If this is still relevant, please reopen
-            with updated reproduction steps on the latest GSD version.
+            with updated reproduction steps on the latest WSF version.
           stale-issue-label: 'stale'
           stale-pr-label: 'stale'
           exempt-issue-labels: 'fix-pending,priority: critical,pinned,confirmed-bug,confirmed'

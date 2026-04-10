@@ -8,15 +8,15 @@ body:
       value: |
         ## ⚠️ Read this before you fill anything out
 
-        A feature adds something new to GSD — a new command, workflow, concept, or integration. Features have the **highest bar** for acceptance because every feature adds permanent maintenance burden to a project built for solo developers.
+        A feature adds something new to WSF — a new command, workflow, concept, or integration. Features have the **highest bar** for acceptance because every feature adds permanent maintenance burden to a project built for solo developers.
 
         **Before opening this issue:**
-        - Check [Discussions](https://github.com/gsd-build/get-shit-done/discussions) — has this been proposed and declined before?
+        - Check [Discussions](https://github.com/wsf-build/wsf/discussions) — has this been proposed and declined before?
         - Read [CONTRIBUTING.md](../../CONTRIBUTING.md#-feature) — understand what "approved-feature" means and why you must wait for it before writing code.
         - Ask yourself: *does this solve a real problem for a solo developer working with an AI coding tool, or is it a feature I personally want?*
 
         **What happens after you submit:**
-        A maintainer will review this spec. If it is incomplete, it will be **closed**, not revised. If it conflicts with GSD's design philosophy, it will be declined. If it is approved, it will be labeled `approved-feature` and you may begin coding.
+        A maintainer will review this spec. If it is incomplete, it will be **closed**, not revised. If it conflicts with WSF's design philosophy, it will be declined. If it is approved, it will be labeled `approved-feature` and you may begin coding.
 
         **Do not open a PR until this issue is labeled `approved-feature`.**
 
@@ -30,7 +30,7 @@ body:
           required: true
         - label: I have read CONTRIBUTING.md and understand that I must wait for `approved-feature` before writing any code
           required: true
-        - label: I have read the existing GSD commands and workflows and confirmed this feature does not duplicate existing behavior
+        - label: I have read the existing WSF commands and workflows and confirmed this feature does not duplicate existing behavior
           required: true
         - label: This feature solves a problem for solo developers using AI coding tools, not a personal preference or workflow I happen to like
           required: true
@@ -83,14 +83,14 @@ body:
         Describe exactly what is being added. Be specific about commands, output, behavior, and user interaction.
         Include example commands or example output where possible.
       placeholder: |
-        A new command `/gsd-rollback` that:
+        A new command `/wsf-rollback` that:
         1. Reads the current phase from STATE.md
         2. Reverts STATE.md to the previous phase's snapshot
         3. Outputs a confirmation with the rolled-back state
 
         Example usage:
         ```
-        /gsd-rollback
+        /wsf-rollback
         > Rolled back from Phase 3 (failed) to Phase 2 (completed)
         ```
     validations:
@@ -105,11 +105,11 @@ body:
         If you cannot fill this out, you do not understand the codebase well enough to propose this feature yet.
       placeholder: |
         Files that would be created:
-        - `get-shit-done/commands/gsd/rollback.md` — new slash command definition
+        - `wsf/commands/wsf/rollback.md` — new slash command definition
 
         Files that would be modified:
-        - `get-shit-done/bin/lib/state.cjs` — add rollback() function
-        - `get-shit-done/bin/lib/phases.cjs` — expose phase snapshot API
+        - `wsf/bin/lib/state.cjs` — add rollback() function
+        - `wsf/bin/lib/phases.cjs` — expose phase snapshot API
         - `tests/rollback.test.cjs` — new test file
         - `docs/COMMANDS.md` — document new command
         - `CHANGELOG.md` — entry for this feature
@@ -139,9 +139,9 @@ body:
         List the specific, testable conditions that must be true for this feature to be considered complete.
         These become the basis for reviewer sign-off. Vague criteria ("it works") are not acceptable.
       placeholder: |
-        - [ ] `/gsd-rollback` reverts STATE.md to the previous phase when current phase status is `failed`
-        - [ ] `/gsd-rollback` exits with an error if there is no previous phase to roll back to
-        - [ ] `/gsd-rollback` outputs the before/after phase names in its confirmation message
+        - [ ] `/wsf-rollback` reverts STATE.md to the previous phase when current phase status is `failed`
+        - [ ] `/wsf-rollback` exits with an error if there is no previous phase to roll back to
+        - [ ] `/wsf-rollback` outputs the before/after phase names in its confirmation message
         - [ ] Rollback is logged in the phase history so the AI agent can see it happened
         - [ ] All existing tests still pass
         - [ ] New tests cover the happy path, no-previous-phase case, and STATE.md corruption case
@@ -226,7 +226,7 @@ body:
       placeholder: |
         1. Manual STATE.md editing — rejected because it requires the developer to understand the schema
            and is error-prone. The AI agent cannot reliably guide this.
-        2. A `/gsd-reset` command that wipes all state — rejected because it is too destructive and
+        2. A `/wsf-reset` command that wipes all state — rejected because it is too destructive and
            loses all completed phase history.
     validations:
       required: true
@@ -236,7 +236,7 @@ body:
     attributes:
       label: Prior art and references
       description: |
-        Does any other tool, project, or GSD discussion address this? Link to anything relevant.
+        Does any other tool, project, or WSF discussion address this? Link to anything relevant.
         If you are aware of a prior declined proposal for this feature, explain why this proposal is different.
     validations:
       required: false

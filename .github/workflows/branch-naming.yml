@@ -25,8 +25,8 @@ jobs:
             const alwaysValid = ['main', 'develop'];
             if (alwaysValid.includes(branch)) return;
             if (branch.startsWith('dependabot/') || branch.startsWith('renovate/')) return;
-            // GSD auto-created branches
-            if (branch.startsWith('gsd/') || branch.startsWith('claude/')) return;
+            // WSF auto-created branches
+            if (branch.startsWith('wsf/') || branch.startsWith('claude/')) return;
 
             const isValid = validPrefixes.some(prefix => branch.startsWith(prefix));
             if (!isValid) {

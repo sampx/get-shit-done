@@ -39,7 +39,7 @@ body:
     attributes:
       label: What existing feature or behavior does this improve?
       description: Name the specific command, workflow, output, or behavior you are enhancing.
-      placeholder: "e.g., `/gsd-plan` output, phase status display in statusline, context summary format"
+      placeholder: "e.g., `/wsf-plan` output, phase status display in statusline, context summary format"
     validations:
       required: true
 
@@ -50,7 +50,7 @@ body:
       description: |
         Describe exactly how the thing works today. Be specific. Include example output or commands if helpful.
       placeholder: |
-        Currently, `/gsd-status` shows:
+        Currently, `/wsf-status` shows:
         ```
         Phase 2/5 — In Progress
         ```
@@ -66,7 +66,7 @@ body:
       description: |
         Describe exactly how it should work after the enhancement. Be specific. Include example output or commands.
       placeholder: |
-        After the enhancement, `/gsd-status` would show:
+        After the enhancement, `/wsf-status` would show:
         ```
         Phase 2/5 — In Progress — "Implement core auth module"
         ```
@@ -105,8 +105,8 @@ body:
         An enhancement should have a narrow, well-defined scope. If your list is long, this might be a feature, not an enhancement.
       placeholder: |
         Files modified:
-        - `get-shit-done/commands/gsd/status.md` — update output format description
-        - `get-shit-done/bin/lib/state.cjs` — expose phase name in status() return value
+        - `wsf/commands/wsf/status.md` — update output format description
+        - `wsf/bin/lib/state.cjs` — expose phase name in status() return value
         - `tests/status.test.cjs` — update snapshot and add test for phase name in output
         - `CHANGELOG.md` — user-facing change entry
 

@@ -17,7 +17,7 @@ body:
         - Documentation infrastructure (not content — use Docs Issue for content)
         - Tech debt paydown
 
-        If this changes how GSD **works** for users, use [Enhancement](./enhancement.yml) or [Feature Request](./feature_request.yml) instead.
+        If this changes how WSF **works** for users, use [Enhancement](./enhancement.yml) or [Feature Request](./feature_request.yml) instead.
 
   - type: checkboxes
     id: preflight
