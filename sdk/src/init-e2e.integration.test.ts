@@ -1,6 +1,6 @@
 /**
  * E2E integration test — proves InitRunner.run() drives real Agent SDK
- * sessions for the gsd-sdk init workflow.
+ * sessions for the wsf-sdk init workflow.
  *
  * Requires Claude Code CLI (`claude`) installed and authenticated.
  * Skips gracefully if CLI is unavailable.
@@ -19,10 +19,10 @@ import { tmpdir } from 'node:os';
 import { fileURLToPath } from 'node:url';
 
 import { InitRunner } from './init-runner.js';
-import { GSDTools, resolveGsdToolsPath } from './gsd-tools.js';
-import { GSDEventStream } from './event-stream.js';
-import { GSDEventType } from './types.js';
-import type { GSDEvent } from './types.js';
+import { WSFTools, resolveWsfToolsPath } from './wsf-tools.js';
+import { WSFEventStream } from './event-stream.js';
+import { WSFEventType } from './types.js';
+import type { WSFEvent } from './types.js';
 
 // ─── CLI availability check ─────────────────────────────────────────────────
 
@@ -36,17 +36,17 @@ try {
 
 const __dirname = fileURLToPath(new URL('.', import.meta.url));
 const sdkPromptsDir = join(__dirname, '..', 'prompts');
-const GSD_TOOLS_PATH = resolveGsdToolsPath(process.cwd());
-const gsdToolsAvailable = existsSync(GSD_TOOLS_PATH);
+const WSF_TOOLS_PATH = resolveWsfToolsPath(process.cwd());
+const wsfToolsAvailable = existsSync(WSF_TOOLS_PATH);
 
 // ─── Test suite ──────────────────────────────────────────────────────────────
 
-describe.skipIf(!cliAvailable || !gsdToolsAvailable)('E2E: InitRunner.run() full workflow', () => {
+describe.skipIf(!cliAvailable || !wsfToolsAvailable)('E2E: InitRunner.run() full workflow', () => {
   let tmpDir: string;
-  let events: GSDEvent[];
+  let events: WSFEvent[];
 
   beforeAll(async () => {
-    tmpDir = await mkdtemp(join(tmpdir(), 'gsd-sdk-init-e2e-'));
+    tmpDir = await mkdtemp(join(tmpdir(), 'wsf-sdk-init-e2e-'));
 
     // Initialize git in the temp dir (required by InitRunner)
     execSync('git init', { cwd: tmpDir, stdio: 'ignore' });
@@ -62,12 +62,12 @@ describe.skipIf(!cliAvailable || !gsdToolsAvailable)('E2E: InitRunner.run() full
 
   it('InitRunner.run() bootstraps a project without human intervention', async () => {
     events = [];
-    const eventStream = new GSDEventStream();
-    eventStream.on('event', (e: GSDEvent) => events.push(e));
+    const eventStream = new WSFEventStream();
+    eventStream.on('event', (e: WSFEvent) => events.push(e));
 
-    const tools = new GSDTools({
+    const tools = new WSFTools({
       projectDir: tmpDir,
-      gsdToolsPath: GSD_TOOLS_PATH,
+      wsfToolsPath: WSF_TOOLS_PATH,
       timeoutMs: 30_000,
     });
 
@@ -113,14 +113,14 @@ describe.skipIf(!cliAvailable || !gsdToolsAvailable)('E2E: InitRunner.run() full
     }
 
     // ── Assert: events captured include InitStart and at least one InitStepComplete ──
-    const initStartEvents = events.filter(e => e.type === GSDEventType.InitStart);
+    const initStartEvents = events.filter(e => e.type === WSFEventType.InitStart);
     expect(initStartEvents.length).toBe(1);
 
-    const stepCompleteEvents = events.filter(e => e.type === GSDEventType.InitStepComplete);
+    const stepCompleteEvents = events.filter(e => e.type === WSFEventType.InitStepComplete);
     expect(stepCompleteEvents.length).toBeGreaterThanOrEqual(1);
 
     // ── Assert: InitComplete event emitted ──
-    const initCompleteEvents = events.filter(e => e.type === GSDEventType.InitComplete);
+    const initCompleteEvents = events.filter(e => e.type === WSFEventType.InitComplete);
     expect(initCompleteEvents.length).toBe(1);
 
     // ── Assert: cost and duration are tracked ──

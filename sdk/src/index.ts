@@ -1,15 +1,15 @@
 /**
- * GSD SDK — Public API for running GSD plans programmatically.
+ * WSF SDK — Public API for running WSF plans programmatically.
  *
- * The GSD class composes plan parsing, config loading, prompt building,
+ * The WSF class composes plan parsing, config loading, prompt building,
  * and session running into a single `executePlan()` call.
  *
  * @example
  * ```typescript
- * import { GSD } from '@gsd-build/sdk';
+ * import { WSF } from '@wsf-build/sdk';
  *
- * const gsd = new GSD({ projectDir: '/path/to/project' });
- * const result = await gsd.executePlan('.planning/phases/01-auth/01-auth-01-PLAN.md');
+ * const wsf = new WSF({ projectDir: '/path/to/project' });
+ * const result = await wsf.executePlan('.planning/phases/01-auth/01-auth-01-PLAN.md');
  *
  * if (result.success) {
  *   console.log(`Plan completed in ${result.durationMs}ms, cost: $${result.totalCostUsd}`);
@@ -23,42 +23,42 @@ import { readFile } from 'node:fs/promises';
 import { join, resolve } from 'node:path';
 import { homedir } from 'node:os';
 
-import type { GSDOptions, PlanResult, SessionOptions, GSDEvent, TransportHandler, PhaseRunnerOptions, PhaseRunnerResult, MilestoneRunnerOptions, MilestoneRunnerResult, RoadmapPhaseInfo } from './types.js';
-import { GSDEventType } from './types.js';
+import type { WSFOptions, PlanResult, SessionOptions, WSFEvent, TransportHandler, PhaseRunnerOptions, PhaseRunnerResult, MilestoneRunnerOptions, MilestoneRunnerResult, RoadmapPhaseInfo } from './types.js';
+import { WSFEventType } from './types.js';
 import { parsePlan, parsePlanFile } from './plan-parser.js';
 import { loadConfig } from './config.js';
-import { GSDTools, resolveGsdToolsPath } from './gsd-tools.js';
+import { WSFTools, resolveWsfToolsPath } from './wsf-tools.js';
 import { runPlanSession } from './session-runner.js';
 import { buildExecutorPrompt, parseAgentTools } from './prompt-builder.js';
-import { GSDEventStream } from './event-stream.js';
+import { WSFEventStream } from './event-stream.js';
 import { PhaseRunner } from './phase-runner.js';
 import { ContextEngine } from './context-engine.js';
 import { PromptFactory } from './phase-prompt.js';
 
-// ─── GSD class ───────────────────────────────────────────────────────────────
+// ─── WSF class ───────────────────────────────────────────────────────────────
 
-export class GSD {
+export class WSF {
   private readonly projectDir: string;
-  private readonly gsdToolsPath: string;
+  private readonly wsfToolsPath: string;
   private readonly defaultModel?: string;
   private readonly defaultMaxBudgetUsd: number;
   private readonly defaultMaxTurns: number;
   private readonly autoMode: boolean;
-  readonly eventStream: GSDEventStream;
+  readonly eventStream: WSFEventStream;
 
-  constructor(options: GSDOptions) {
+  constructor(options: WSFOptions) {
     this.projectDir = resolve(options.projectDir);
-    this.gsdToolsPath =
-      options.gsdToolsPath ?? resolveGsdToolsPath(this.projectDir);
+    this.wsfToolsPath =
+      options.wsfToolsPath ?? resolveWsfToolsPath(this.projectDir);
     this.defaultModel = options.model;
     this.defaultMaxBudgetUsd = options.maxBudgetUsd ?? 5.0;
     this.defaultMaxTurns = options.maxTurns ?? 50;
     this.autoMode = options.autoMode ?? false;
-    this.eventStream = new GSDEventStream();
+    this.eventStream = new WSFEventStream();
   }
 
   /**
-   * Execute a single GSD plan file.
+   * Execute a single WSF plan file.
    *
    * Reads the plan from disk, parses it, loads project config,
    * optionally reads the agent definition, then runs a query() session.
@@ -96,14 +96,14 @@ export class GSD {
   }
 
   /**
-   * Subscribe a simple handler to receive all GSD events.
+   * Subscribe a simple handler to receive all WSF events.
    */
-  onEvent(handler: (event: GSDEvent) => void): void {
+  onEvent(handler: (event: WSFEvent) => void): void {
     this.eventStream.on('event', handler);
   }
 
   /**
-   * Subscribe a transport handler to receive all GSD events.
+   * Subscribe a transport handler to receive all WSF events.
    * Transports provide structured onEvent/close lifecycle.
    */
   addTransport(handler: TransportHandler): void {
@@ -111,19 +111,19 @@ export class GSD {
   }
 
   /**
-   * Create a GSDTools instance for state management operations.
+   * Create a WSFTools instance for state management operations.
    */
-  createTools(): GSDTools {
-    return new GSDTools({
+  createTools(): WSFTools {
+    return new WSFTools({
       projectDir: this.projectDir,
-      gsdToolsPath: this.gsdToolsPath,
+      wsfToolsPath: this.wsfToolsPath,
     });
   }
 
   /**
    * Run a full phase lifecycle: discuss → research → plan → execute → verify → advance.
    *
-   * Creates the necessary collaborators (GSDTools, PromptFactory, ContextEngine),
+   * Creates the necessary collaborators (WSFTools, PromptFactory, ContextEngine),
    * loads project config, instantiates a PhaseRunner, and delegates to `runner.run()`.
    *
    * @param phaseNumber - The phase number to execute (e.g. "01", "02")
@@ -174,7 +174,7 @@ export class GSD {
 
     // Emit MilestoneStart
     this.eventStream.emitEvent({
-      type: GSDEventType.MilestoneStart,
+      type: WSFEventType.MilestoneStart,
       timestamp: new Date().toISOString(),
       sessionId: `milestone-${Date.now()}`,
       phaseCount: incompletePhases.length,
@@ -227,7 +227,7 @@ export class GSD {
 
     // Emit MilestoneComplete
     this.eventStream.emitEvent({
-      type: GSDEventType.MilestoneComplete,
+      type: WSFEventType.MilestoneComplete,
       timestamp: new Date().toISOString(),
       sessionId: `milestone-${Date.now()}`,
       success,
@@ -255,18 +255,18 @@ export class GSD {
   }
 
   /**
-   * Load the gsd-executor agent definition if available.
+   * Load the wsf-executor agent definition if available.
    * Falls back gracefully — returns undefined if not found.
    */
   private async loadAgentDefinition(): Promise<string | undefined> {
     const paths = [
-      // Repo-local GSD installation
-      join(this.projectDir, '.claude', 'get-shit-done', 'agents', 'gsd-executor.md'),
+      // Repo-local WSF installation
+      join(this.projectDir, '.claude', 'wsf', 'agents', 'wsf-executor.md'),
       // Repo-local agents directory
-      join(this.projectDir, '.claude', 'agents', 'gsd-executor.md'),
+      join(this.projectDir, '.claude', 'agents', 'wsf-executor.md'),
       // Global home directory
-      join(homedir(), '.claude', 'agents', 'gsd-executor.md'),
-      join(this.projectDir, 'agents', 'gsd-executor.md'),
+      join(homedir(), '.claude', 'agents', 'wsf-executor.md'),
+      join(this.projectDir, 'agents', 'wsf-executor.md'),
     ];
 
     for (const p of paths) {
@@ -285,14 +285,14 @@ export class GSD {
 
 export { parsePlan, parsePlanFile } from './plan-parser.js';
 export { loadConfig } from './config.js';
-export type { GSDConfig } from './config.js';
-export { GSDTools, GSDToolsError, resolveGsdToolsPath } from './gsd-tools.js';
+export type { WSFConfig } from './config.js';
+export { WSFTools, WSFToolsError, resolveWsfToolsPath } from './wsf-tools.js';
 export { runPlanSession, runPhaseStepSession } from './session-runner.js';
 export { buildExecutorPrompt, parseAgentTools } from './prompt-builder.js';
 export * from './types.js';
 
 // S02: Event stream, context, prompt, and logging modules
-export { GSDEventStream } from './event-stream.js';
+export { WSFEventStream } from './event-stream.js';
 export type { EventStreamContext } from './event-stream.js';
 export { ContextEngine, PHASE_FILE_MANIFEST } from './context-engine.js';
 export type { FileSpec } from './context-engine.js';
@@ -302,8 +302,8 @@ export { getToolsForPhase, PHASE_AGENT_MAP, PHASE_DEFAULT_TOOLS } from './tool-s
 export { checkResearchGate } from './research-gate.js';
 export type { ResearchGateResult } from './research-gate.js';
 export { PromptFactory, extractBlock, extractSteps, PHASE_WORKFLOW_MAP } from './phase-prompt.js';
-export { GSDLogger } from './logger.js';
-export type { LogLevel, LogEntry, GSDLoggerOptions } from './logger.js';
+export { WSFLogger } from './logger.js';
+export type { LogLevel, LogEntry, WSFLoggerOptions } from './logger.js';
 
 // S03: Phase lifecycle state machine
 export { PhaseRunner, PhaseRunnerError } from './phase-runner.js';

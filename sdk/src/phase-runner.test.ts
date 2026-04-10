@@ -10,12 +10,12 @@ import type {
   SessionUsage,
   SessionOptions,
   HumanGateCallbacks,
-  GSDEvent,
+  WSFEvent,
   PhasePlanIndex,
   PlanInfo,
 } from './types.js';
-import { PhaseStepType, PhaseType, GSDEventType } from './types.js';
-import type { GSDConfig } from './config.js';
+import { PhaseStepType, PhaseType, WSFEventType } from './types.js';
+import type { WSFConfig } from './config.js';
 import { CONFIG_DEFAULTS } from './config.js';
 
 // ─── Mock modules ────────────────────────────────────────────────────────────
@@ -109,7 +109,7 @@ function makePlanIndex(planCount: number, overrides: Partial<PhasePlanIndex> = {
   };
 }
 
-function makeConfig(overrides: Partial<GSDConfig> = {}): GSDConfig {
+function makeConfig(overrides: Partial<WSFConfig> = {}): WSFConfig {
   return {
     ...structuredClone(CONFIG_DEFAULTS),
     ...overrides,
@@ -117,11 +117,11 @@ function makeConfig(overrides: Partial<GSDConfig> = {}): GSDConfig {
       ...CONFIG_DEFAULTS.workflow,
       ...(overrides.workflow ?? {}),
     },
-  } as GSDConfig;
+  } as WSFConfig;
 }
 
 function makeDeps(overrides: Partial<PhaseRunnerDeps> = {}): PhaseRunnerDeps {
-  const events: GSDEvent[] = [];
+  const events: WSFEvent[] = [];
 
   return {
     projectDir: '/tmp/project',
@@ -146,7 +146,7 @@ function makeDeps(overrides: Partial<PhaseRunnerDeps> = {}): PhaseRunnerDeps {
       resolveContextFiles: vi.fn().mockResolvedValue({}),
     } as any,
     eventStream: {
-      emitEvent: vi.fn((event: GSDEvent) => events.push(event)),
+      emitEvent: vi.fn((event: WSFEvent) => events.push(event)),
       on: vi.fn(),
       emit: vi.fn(),
     } as any,
@@ -156,11 +156,11 @@ function makeDeps(overrides: Partial<PhaseRunnerDeps> = {}): PhaseRunnerDeps {
 }
 
 /** Collect events from a deps object. */
-function getEmittedEvents(deps: PhaseRunnerDeps): GSDEvent[] {
-  const events: GSDEvent[] = [];
+function getEmittedEvents(deps: PhaseRunnerDeps): WSFEvent[] {
+  const events: WSFEvent[] = [];
   const emitFn = deps.eventStream.emitEvent as ReturnType<typeof vi.fn>;
   for (const call of emitFn.mock.calls) {
-    events.push(call[0] as GSDEvent);
+    events.push(call[0] as WSFEvent);
   }
   return events;
 }
@@ -432,7 +432,7 @@ describe('PhaseRunner', () => {
     let tempPhaseDir: string;
 
     beforeEach(async () => {
-      tempPhaseDir = await mkdtemp(join(tmpdir(), 'gsd-research-gate-'));
+      tempPhaseDir = await mkdtemp(join(tmpdir(), 'wsf-research-gate-'));
     });
 
     afterEach(async () => {
@@ -1022,14 +1022,14 @@ Use TypeScript.`, 'utf-8');
       const eventTypes = events.map(e => e.type);
 
       // First event: phase_start
-      expect(eventTypes[0]).toBe(GSDEventType.PhaseStart);
+      expect(eventTypes[0]).toBe(WSFEventType.PhaseStart);
 
       // Last event: phase_complete
-      expect(eventTypes[eventTypes.length - 1]).toBe(GSDEventType.PhaseComplete);
+      expect(eventTypes[eventTypes.length - 1]).toBe(WSFEventType.PhaseComplete);
 
       // Each step has start + complete pair
-      const stepStarts = events.filter(e => e.type === GSDEventType.PhaseStepStart);
-      const stepCompletes = events.filter(e => e.type === GSDEventType.PhaseStepComplete);
+      const stepStarts = events.filter(e => e.type === WSFEventType.PhaseStepStart);
+      const stepCompletes = events.filter(e => e.type === WSFEventType.PhaseStepComplete);
       expect(stepStarts.length).toBeGreaterThan(0);
       expect(stepStarts.length).toBe(stepCompletes.length);
     });
@@ -1044,7 +1044,7 @@ Use TypeScript.`, 'utf-8');
       await runner.run('5');
 
       const events = getEmittedEvents(deps);
-      const phaseStart = events.find(e => e.type === GSDEventType.PhaseStart) as any;
+      const phaseStart = events.find(e => e.type === WSFEventType.PhaseStart) as any;
       expect(phaseStart.phaseNumber).toBe('5');
       expect(phaseStart.phaseName).toBe('Auth Phase');
     });
@@ -1059,7 +1059,7 @@ Use TypeScript.`, 'utf-8');
       await runner.run('1');
 
       const events = getEmittedEvents(deps);
-      const phaseComplete = events.find(e => e.type === GSDEventType.PhaseComplete) as any;
+      const phaseComplete = events.find(e => e.type === WSFEventType.PhaseComplete) as any;
       expect(phaseComplete.success).toBe(true);
       expect(phaseComplete.stepsCompleted).toBe(3); // plan, execute, advance
     });
@@ -1074,7 +1074,7 @@ Use TypeScript.`, 'utf-8');
 
       const events = getEmittedEvents(deps);
       const stepStarts = events
-        .filter(e => e.type === GSDEventType.PhaseStepStart)
+        .filter(e => e.type === WSFEventType.PhaseStepStart)
         .map(e => (e as any).step);
 
       // With all config defaults: discuss, research, plan, execute, verify, advance
@@ -1103,7 +1103,7 @@ Use TypeScript.`, 'utf-8');
     it('throws PhaseRunnerError when initPhaseOp fails', async () => {
       const deps = makeDeps();
       (deps.tools.initPhaseOp as ReturnType<typeof vi.fn>).mockRejectedValue(
-        new Error('gsd-tools crashed'),
+        new Error('wsf-tools crashed'),
       );
 
       const runner = new PhaseRunner(deps);
@@ -1211,7 +1211,7 @@ Use TypeScript.`, 'utf-8');
       const deps = makeDeps({ config });
       (deps.tools.initPhaseOp as ReturnType<typeof vi.fn>).mockResolvedValue(phaseOp);
       (deps.tools.phaseComplete as ReturnType<typeof vi.fn>).mockRejectedValue(
-        new Error('gsd-tools commit failed'),
+        new Error('wsf-tools commit failed'),
       );
 
       const runner = new PhaseRunner(deps);
@@ -1650,8 +1650,8 @@ Use TypeScript.`, 'utf-8');
       await runner.run('1');
 
       const events = getEmittedEvents(deps);
-      const waveStarts = events.filter(e => e.type === GSDEventType.WaveStart) as any[];
-      const waveCompletes = events.filter(e => e.type === GSDEventType.WaveComplete) as any[];
+      const waveStarts = events.filter(e => e.type === WSFEventType.WaveStart) as any[];
+      const waveCompletes = events.filter(e => e.type === WSFEventType.WaveComplete) as any[];
 
       // Two waves → two start + two complete events
       expect(waveStarts).toHaveLength(2);
@@ -1758,7 +1758,7 @@ Use TypeScript.`, 'utf-8');
 
       const events = getEmittedEvents(deps);
       const waveEvents = events.filter(
-        e => e.type === GSDEventType.WaveStart || e.type === GSDEventType.WaveComplete,
+        e => e.type === WSFEventType.WaveStart || e.type === WSFEventType.WaveComplete,
       );
       expect(waveEvents).toHaveLength(0);
     });
@@ -1920,10 +1920,10 @@ Use TypeScript.`, 'utf-8');
 
       const events = getEmittedEvents(deps);
       const planCheckStarts = events.filter(
-        e => e.type === GSDEventType.PhaseStepStart && (e as any).step === PhaseStepType.PlanCheck,
+        e => e.type === WSFEventType.PhaseStepStart && (e as any).step === PhaseStepType.PlanCheck,
       );
       const planCheckCompletes = events.filter(
-        e => e.type === GSDEventType.PhaseStepComplete && (e as any).step === PhaseStepType.PlanCheck,
+        e => e.type === WSFEventType.PhaseStepComplete && (e as any).step === PhaseStepType.PlanCheck,
       );
 
       expect(planCheckStarts.length).toBeGreaterThanOrEqual(1);

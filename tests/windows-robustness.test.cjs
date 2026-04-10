@@ -10,7 +10,7 @@
  * 4. findProjectRoot detects .git at same level as .planning/
  * 5. @file: handoff present in all workflows that call init
  *
- * Regression tests for: https://github.com/gsd-build/get-shit-done/issues/1343
+ * Regression tests for: https://github.com/wsf-build/wsf/issues/1343
  */
 
 const { test, describe } = require('node:test');
@@ -18,7 +18,7 @@ const assert = require('node:assert/strict');
 const fs = require('fs');
 const path = require('path');
 
-const WORKFLOWS_DIR = path.join(__dirname, '..', 'get-shit-done', 'workflows');
+const WORKFLOWS_DIR = path.join(__dirname, '..', 'wsf', 'workflows');
 const HOOKS_DIR = path.join(__dirname, '..', 'hooks');
 
 /**
@@ -179,7 +179,7 @@ describe('hook stdin timeout patterns', () => {
 // ─── @file: Handoff ─────────────────────────────────────────────────────────
 
 describe('@file: handoff in workflows', () => {
-  test('all workflows calling gsd-tools init have @file: handler', () => {
+  test('all workflows calling wsf-tools init have @file: handler', () => {
     const workflowFiles = fs.readdirSync(WORKFLOWS_DIR)
       .filter(f => f.endsWith('.md'));
 
@@ -187,8 +187,8 @@ describe('@file: handoff in workflows', () => {
     for (const wf of workflowFiles) {
       const content = fs.readFileSync(path.join(WORKFLOWS_DIR, wf), 'utf-8');
 
-      // Check if this workflow calls gsd-tools.cjs init
-      if (/INIT=\$\(node.*gsd-tools.*\binit\b/.test(content)) {
+      // Check if this workflow calls wsf-tools.cjs init
+      if (/INIT=\$\(node.*wsf-tools.*\binit\b/.test(content)) {
         // Must have @file: handler
         if (!content.includes('@file:')) {
           missing.push(wf);
@@ -198,7 +198,7 @@ describe('@file: handoff in workflows', () => {
 
     assert.strictEqual(
       missing.length, 0,
-      `Workflows calling gsd-tools init without @file: handler (large output will be truncated):\n  ${missing.join('\n  ')}`
+      `Workflows calling wsf-tools init without @file: handler (large output will be truncated):\n  ${missing.join('\n  ')}`
     );
   });
 });

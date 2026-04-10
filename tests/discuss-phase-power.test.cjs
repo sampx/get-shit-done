@@ -1,5 +1,5 @@
 /**
- * GSD Tools Tests - discuss-phase power user mode
+ * WSF Tools Tests - discuss-phase power user mode
  *
  * Validates that the --power flag workflow documentation is present and
  * correctly describes the bulk question generation/answering flow.
@@ -13,16 +13,16 @@ const fs = require('fs');
 const path = require('path');
 
 describe('discuss-phase power user mode (#1513)', () => {
-  const commandPath = path.join(__dirname, '..', 'commands', 'gsd', 'discuss-phase.md');
-  const workflowPath = path.join(__dirname, '..', 'get-shit-done', 'workflows', 'discuss-phase.md');
-  const powerWorkflowPath = path.join(__dirname, '..', 'get-shit-done', 'workflows', 'discuss-phase-power.md');
+  const commandPath = path.join(__dirname, '..', 'commands', 'wsf', 'discuss-phase.md');
+  const workflowPath = path.join(__dirname, '..', 'wsf', 'workflows', 'discuss-phase.md');
+  const powerWorkflowPath = path.join(__dirname, '..', 'wsf', 'workflows', 'discuss-phase-power.md');
 
   describe('command file (discuss-phase.md)', () => {
     test('mentions --power flag in argument-hint or description', () => {
       const content = fs.readFileSync(commandPath, 'utf8');
       assert.ok(
         content.includes('--power'),
-        'commands/gsd/discuss-phase.md should document the --power flag'
+        'commands/wsf/discuss-phase.md should document the --power flag'
       );
     });
 
@@ -59,7 +59,7 @@ describe('discuss-phase power user mode (#1513)', () => {
     test('file exists', () => {
       assert.ok(
         fs.existsSync(powerWorkflowPath),
-        'get-shit-done/workflows/discuss-phase-power.md should exist'
+        'wsf/workflows/discuss-phase-power.md should exist'
       );
     });
 

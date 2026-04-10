@@ -16,7 +16,7 @@ const assert = require('node:assert/strict');
 const fs = require('fs');
 const path = require('path');
 
-const MILESTONE_SRC = path.join(__dirname, '..', 'get-shit-done', 'bin', 'lib', 'milestone.cjs');
+const MILESTONE_SRC = path.join(__dirname, '..', 'wsf', 'bin', 'lib', 'milestone.cjs');
 
 describe('milestone.cjs regex global state fix', () => {
   let src;

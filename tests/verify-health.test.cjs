@@ -1,5 +1,5 @@
 /**
- * GSD Tools Tests - Validate Health Command
+ * WSF Tools Tests - Validate Health Command
  *
  * Comprehensive tests for validate-health covering all 8 health checks
  * and the repair path.
@@ -9,7 +9,7 @@ const { test, describe, beforeEach, afterEach } = require('node:test');
 const assert = require('node:assert/strict');
 const fs = require('fs');
 const path = require('path');
-const { runGsdTools, createTempProject, cleanup } = require('./helpers.cjs');
+const { runWsfTools, createTempProject, cleanup } = require('./helpers.cjs');
 
 // ─── Helpers for setting up minimal valid projects ────────────────────────────
 
@@ -65,7 +65,7 @@ describe('validate health command', () => {
     // createTempProject creates .planning/phases — remove it entirely
     fs.rmSync(path.join(tmpDir, '.planning'), { recursive: true, force: true });
 
-    const result = runGsdTools('validate health', tmpDir);
+    const result = runWsfTools('validate health', tmpDir);
     assert.ok(result.success, `Command failed: ${result.error}`);
 
     const output = JSON.parse(result.output);
@@ -86,7 +86,7 @@ describe('validate health command', () => {
     // Create valid phase dir so no W007
     fs.mkdirSync(path.join(tmpDir, '.planning', 'phases', '01-a'), { recursive: true });
 
-    const result = runGsdTools('validate health', tmpDir);
+    const result = runWsfTools('validate health', tmpDir);
     assert.ok(result.success, `Command failed: ${result.error}`);
 
     const output = JSON.parse(result.output);
@@ -107,7 +107,7 @@ describe('validate health command', () => {
     writeValidConfigJson(tmpDir);
     fs.mkdirSync(path.join(tmpDir, '.planning', 'phases', '01-a'), { recursive: true });
 
-    const result = runGsdTools('validate health', tmpDir);
+    const result = runWsfTools('validate health', tmpDir);
     assert.ok(result.success, `Command failed: ${result.error}`);
 
     const output = JSON.parse(result.output);
@@ -126,7 +126,7 @@ describe('validate health command', () => {
     writeValidConfigJson(tmpDir);
     fs.mkdirSync(path.join(tmpDir, '.planning', 'phases', '01-a'), { recursive: true });
 
-    const result = runGsdTools('validate health', tmpDir);
+    const result = runWsfTools('validate health', tmpDir);
     assert.ok(result.success, `Command failed: ${result.error}`);
 
     const output = JSON.parse(result.output);
@@ -148,7 +148,7 @@ describe('validate health command', () => {
     writeValidConfigJson(tmpDir);
     // No ROADMAP.md
 
-    const result = runGsdTools('validate health', tmpDir);
+    const result = runWsfTools('validate health', tmpDir);
     assert.ok(result.success, `Command failed: ${result.error}`);
 
     const output = JSON.parse(result.output);
@@ -167,7 +167,7 @@ describe('validate health command', () => {
     fs.mkdirSync(path.join(tmpDir, '.planning', 'phases', '01-a'), { recursive: true });
     // No STATE.md
 
-    const result = runGsdTools('validate health', tmpDir);
+    const result = runWsfTools('validate health', tmpDir);
     assert.ok(result.success, `Command failed: ${result.error}`);
 
     const output = JSON.parse(result.output);
@@ -187,7 +187,7 @@ describe('validate health command', () => {
     );
     fs.mkdirSync(path.join(tmpDir, '.planning', 'phases', '01-a'), { recursive: true });
 
-    const result = runGsdTools('validate health', tmpDir);
+    const result = runWsfTools('validate health', tmpDir);
     assert.ok(result.success, `Command failed: ${result.error}`);
 
     const output = JSON.parse(result.output);
@@ -205,7 +205,7 @@ describe('validate health command', () => {
     fs.mkdirSync(path.join(tmpDir, '.planning', 'phases', '01-a'), { recursive: true });
     // No config.json
 
-    const result = runGsdTools('validate health', tmpDir);
+    const result = runWsfTools('validate health', tmpDir);
     assert.ok(result.success, `Command failed: ${result.error}`);
 
     const output = JSON.parse(result.output);
@@ -224,7 +224,7 @@ describe('validate health command', () => {
     );
     fs.mkdirSync(path.join(tmpDir, '.planning', 'phases', '01-a'), { recursive: true });
 
-    const result = runGsdTools('validate health', tmpDir);
+    const result = runWsfTools('validate health', tmpDir);
     assert.ok(result.success, `Command failed: ${result.error}`);
 
     const output = JSON.parse(result.output);
@@ -244,7 +244,7 @@ describe('validate health command', () => {
     );
     fs.mkdirSync(path.join(tmpDir, '.planning', 'phases', '01-a'), { recursive: true });
 
-    const result = runGsdTools('validate health', tmpDir);
+    const result = runWsfTools('validate health', tmpDir);
     assert.ok(result.success, `Command failed: ${result.error}`);
 
     const output = JSON.parse(result.output);
@@ -272,7 +272,7 @@ describe('validate health command', () => {
     );
     fs.mkdirSync(path.join(tmpDir, '.planning', 'phases', '01-a'), { recursive: true });
 
-    const result = runGsdTools('validate health', tmpDir);
+    const result = runWsfTools('validate health', tmpDir);
     assert.ok(result.success, `Command failed: ${result.error}`);
 
     const output = JSON.parse(result.output);
@@ -296,7 +296,7 @@ describe('validate health command', () => {
     // Create a badly named dir
     fs.mkdirSync(path.join(tmpDir, '.planning', 'phases', 'bad_name'), { recursive: true });
 
-    const result = runGsdTools('validate health', tmpDir);
+    const result = runWsfTools('validate health', tmpDir);
     assert.ok(result.success, `Command failed: ${result.error}`);
 
     const output = JSON.parse(result.output);
@@ -319,7 +319,7 @@ describe('validate health command', () => {
     fs.writeFileSync(path.join(phaseDir, '01-01-PLAN.md'), '# Plan\n');
     // No 01-01-SUMMARY.md
 
-    const result = runGsdTools('validate health', tmpDir);
+    const result = runWsfTools('validate health', tmpDir);
     assert.ok(result.success, `Command failed: ${result.error}`);
 
     const output = JSON.parse(result.output);
@@ -342,7 +342,7 @@ describe('validate health command', () => {
     writeValidConfigJson(tmpDir);
     // No phase dirs
 
-    const result = runGsdTools('validate health', tmpDir);
+    const result = runWsfTools('validate health', tmpDir);
     assert.ok(result.success, `Command failed: ${result.error}`);
 
     const output = JSON.parse(result.output);
@@ -364,7 +364,7 @@ describe('validate health command', () => {
     // Orphan phase dir not in ROADMAP
     fs.mkdirSync(path.join(tmpDir, '.planning', 'phases', '99-orphan'), { recursive: true });
 
-    const result = runGsdTools('validate health', tmpDir);
+    const result = runWsfTools('validate health', tmpDir);
     assert.ok(result.success, `Command failed: ${result.error}`);
 
     const output = JSON.parse(result.output);
@@ -387,7 +387,7 @@ describe('validate health command', () => {
     );
     fs.mkdirSync(path.join(tmpDir, '.planning', 'phases', '01-a'), { recursive: true });
 
-    const result = runGsdTools('validate health', tmpDir);
+    const result = runWsfTools('validate health', tmpDir);
     assert.ok(result.success, `Command failed: ${result.error}`);
 
     const output = JSON.parse(result.output);
@@ -408,7 +408,7 @@ describe('validate health command', () => {
     );
     fs.mkdirSync(path.join(tmpDir, '.planning', 'phases', '01-a'), { recursive: true });
 
-    const result = runGsdTools('validate health', tmpDir);
+    const result = runWsfTools('validate health', tmpDir);
     assert.ok(result.success, `Command failed: ${result.error}`);
 
     const output = JSON.parse(result.output);
@@ -434,7 +434,7 @@ describe('validate health command', () => {
     );
     // No VALIDATION.md
 
-    const result = runGsdTools('validate health', tmpDir);
+    const result = runWsfTools('validate health', tmpDir);
     assert.ok(result.success, `Command failed: ${result.error}`);
 
     const output = JSON.parse(result.output);
@@ -461,7 +461,7 @@ describe('validate health command', () => {
       '# Validation\n\nValidation content.\n'
     );
 
-    const result = runGsdTools('validate health', tmpDir);
+    const result = runWsfTools('validate health', tmpDir);
     assert.ok(result.success, `Command failed: ${result.error}`);
 
     const output = JSON.parse(result.output);
@@ -485,7 +485,7 @@ describe('validate health command', () => {
     fs.writeFileSync(path.join(phaseDir, '01-01-PLAN.md'), '# Plan\n');
     fs.writeFileSync(path.join(phaseDir, '01-01-SUMMARY.md'), '# Summary\n');
 
-    const result = runGsdTools('validate health', tmpDir);
+    const result = runWsfTools('validate health', tmpDir);
     assert.ok(result.success, `Command failed: ${result.error}`);
 
     const output = JSON.parse(result.output);
@@ -501,7 +501,7 @@ describe('validate health command', () => {
     // No config.json → W003 (warning, not error)
     fs.mkdirSync(path.join(tmpDir, '.planning', 'phases', '01-a'), { recursive: true });
 
-    const result = runGsdTools('validate health', tmpDir);
+    const result = runWsfTools('validate health', tmpDir);
     assert.ok(result.success, `Command failed: ${result.error}`);
 
     const output = JSON.parse(result.output);
@@ -538,7 +538,7 @@ describe('validate health --repair command', () => {
     const configPath = path.join(tmpDir, '.planning', 'config.json');
     if (fs.existsSync(configPath)) fs.unlinkSync(configPath);
 
-    const result = runGsdTools('validate health --repair', tmpDir);
+    const result = runWsfTools('validate health --repair', tmpDir);
     assert.ok(result.success, `Command failed: ${result.error}`);
 
     const output = JSON.parse(result.output);
@@ -561,8 +561,8 @@ describe('validate health --repair command', () => {
     assert.strictEqual(diskConfig.workflow.verifier, true, 'workflow.verifier should default to true');
     assert.strictEqual(diskConfig.workflow.nyquist_validation, true, 'workflow.nyquist_validation should default to true');
     // Verify branch templates are present
-    assert.strictEqual(diskConfig.phase_branch_template, 'gsd/phase-{phase}-{slug}');
-    assert.strictEqual(diskConfig.milestone_branch_template, 'gsd/{milestone}-{slug}');
+    assert.strictEqual(diskConfig.phase_branch_template, 'wsf/phase-{phase}-{slug}');
+    assert.strictEqual(diskConfig.milestone_branch_template, 'wsf/{milestone}-{slug}');
   });
 
   test('resets config.json when JSON is invalid', () => {
@@ -570,7 +570,7 @@ describe('validate health --repair command', () => {
     const configPath = path.join(tmpDir, '.planning', 'config.json');
     fs.writeFileSync(configPath, '{broken json');
 
-    const result = runGsdTools('validate health --repair', tmpDir);
+    const result = runWsfTools('validate health --repair', tmpDir);
     assert.ok(result.success, `Command failed: ${result.error}`);
 
     const output = JSON.parse(result.output);
@@ -594,7 +594,7 @@ describe('validate health --repair command', () => {
     const statePath = path.join(tmpDir, '.planning', 'STATE.md');
     if (fs.existsSync(statePath)) fs.unlinkSync(statePath);
 
-    const result = runGsdTools('validate health --repair', tmpDir);
+    const result = runWsfTools('validate health --repair', tmpDir);
     assert.ok(result.success, `Command failed: ${result.error}`);
 
     const output = JSON.parse(result.output);
@@ -621,7 +621,7 @@ describe('validate health --repair command', () => {
       originalContent
     );
 
-    const result = runGsdTools('validate health --repair', tmpDir);
+    const result = runWsfTools('validate health --repair', tmpDir);
     assert.ok(result.success, `Command failed: ${result.error}`);
 
     const output = JSON.parse(result.output);
@@ -648,7 +648,7 @@ describe('validate health --repair command', () => {
       JSON.stringify({ model_profile: 'balanced', workflow: { research: true } }, null, 2)
     );
 
-    const result = runGsdTools('validate health --repair', tmpDir);
+    const result = runWsfTools('validate health --repair', tmpDir);
     assert.ok(result.success, `Command failed: ${result.error}`);
 
     const output = JSON.parse(result.output);
@@ -673,7 +673,7 @@ describe('validate health --repair command', () => {
     if (fs.existsSync(statePath)) fs.unlinkSync(statePath);
 
     // Run WITHOUT --repair to just check repairable_count
-    const result = runGsdTools('validate health', tmpDir);
+    const result = runWsfTools('validate health', tmpDir);
     assert.ok(result.success, `Command failed: ${result.error}`);
 
     const output = JSON.parse(result.output);
@@ -690,7 +690,7 @@ describe('validate health --repair command', () => {
       '# Session State\n\nPhase 99 is the current phase.\n'
     );
 
-    const result = runGsdTools('validate health', tmpDir);
+    const result = runWsfTools('validate health', tmpDir);
     assert.ok(result.success, `Command failed: ${result.error}`);
 
     const output = JSON.parse(result.output);

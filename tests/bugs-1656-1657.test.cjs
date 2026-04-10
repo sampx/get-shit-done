@@ -6,7 +6,7 @@
 
 'use strict';
 
-process.env.GSD_TEST_MODE = '1';
+process.env.WSF_TEST_MODE = '1';
 
 const { test, describe, before } = require('node:test');
 const assert = require('node:assert/strict');
@@ -31,19 +31,19 @@ describe('#1656: community .sh hooks must be present in hooks/dist', () => {
     });
   });
 
-  test('gsd-session-state.sh exists in hooks/dist', () => {
-    const p = path.join(HOOKS_DIST, 'gsd-session-state.sh');
-    assert.ok(fs.existsSync(p), 'gsd-session-state.sh must be in hooks/dist/ so the installer can copy it');
+  test('wsf-session-state.sh exists in hooks/dist', () => {
+    const p = path.join(HOOKS_DIST, 'wsf-session-state.sh');
+    assert.ok(fs.existsSync(p), 'wsf-session-state.sh must be in hooks/dist/ so the installer can copy it');
   });
 
-  test('gsd-validate-commit.sh exists in hooks/dist', () => {
-    const p = path.join(HOOKS_DIST, 'gsd-validate-commit.sh');
-    assert.ok(fs.existsSync(p), 'gsd-validate-commit.sh must be in hooks/dist/ so the installer can copy it');
+  test('wsf-validate-commit.sh exists in hooks/dist', () => {
+    const p = path.join(HOOKS_DIST, 'wsf-validate-commit.sh');
+    assert.ok(fs.existsSync(p), 'wsf-validate-commit.sh must be in hooks/dist/ so the installer can copy it');
   });
 
-  test('gsd-phase-boundary.sh exists in hooks/dist', () => {
-    const p = path.join(HOOKS_DIST, 'gsd-phase-boundary.sh');
-    assert.ok(fs.existsSync(p), 'gsd-phase-boundary.sh must be in hooks/dist/ so the installer can copy it');
+  test('wsf-phase-boundary.sh exists in hooks/dist', () => {
+    const p = path.join(HOOKS_DIST, 'wsf-phase-boundary.sh');
+    assert.ok(fs.existsSync(p), 'wsf-phase-boundary.sh must be in hooks/dist/ so the installer can copy it');
   });
 });
 

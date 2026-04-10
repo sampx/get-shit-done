@@ -1,12 +1,12 @@
 /**
- * CLI Transport — renders GSD events as rich ANSI-colored output to a Writable stream.
+ * CLI Transport — renders WSF events as rich ANSI-colored output to a Writable stream.
  *
  * Implements TransportHandler with colored banners, step indicators, spawn markers,
  * and running cost totals. No external dependencies — ANSI codes are inline constants.
  */
 
 import type { Writable } from 'node:stream';
-import { GSDEventType, type GSDEvent, type TransportHandler } from './types.js';
+import { WSFEventType, type WSFEvent, type TransportHandler } from './types.js';
 
 // ─── ANSI escape constants (no dependency per D021) ──────────────────────────
 
@@ -52,8 +52,8 @@ export class CLITransport implements TransportHandler {
     this.out = out ?? process.stdout;
   }
 
-  /** Format and write a GSD event as a rich ANSI-colored line. Never throws. */
-  onEvent(event: GSDEvent): void {
+  /** Format and write a WSF event as a rich ANSI-colored line. Never throws. */
+  onEvent(event: WSFEvent): void {
     try {
       const line = this.formatEvent(event);
       this.out.write(line + '\n');
@@ -69,57 +69,57 @@ export class CLITransport implements TransportHandler {
 
   // ─── Private formatting ────────────────────────────────────────────
 
-  private formatEvent(event: GSDEvent): string {
+  private formatEvent(event: WSFEvent): string {
     const time = formatTime(event.timestamp);
 
     switch (event.type) {
-      case GSDEventType.SessionInit:
+      case WSFEventType.SessionInit:
         return `[${time}] [INIT] Session started — model: ${event.model}, tools: ${event.tools.length}, cwd: ${event.cwd}`;
 
-      case GSDEventType.SessionComplete:
+      case WSFEventType.SessionComplete:
         return `[${time}] ${GREEN}✓ Session complete — cost: ${usd(event.totalCostUsd)}, turns: ${event.numTurns}, duration: ${(event.durationMs / 1000).toFixed(1)}s${RESET}`;
 
-      case GSDEventType.SessionError:
+      case WSFEventType.SessionError:
         return `[${time}] ${RED}✗ Session failed — subtype: ${event.errorSubtype}, errors: [${event.errors.join(', ')}]${RESET}`;
 
-      case GSDEventType.ToolCall:
+      case WSFEventType.ToolCall:
         return `[${time}] [TOOL] ${event.toolName}(${truncate(JSON.stringify(event.input), 80)})`;
 
-      case GSDEventType.PhaseStart:
-        return `${BOLD}${CYAN}━━━ GSD ► PHASE ${event.phaseNumber}: ${event.phaseName} ━━━${RESET}`;
+      case WSFEventType.PhaseStart:
+        return `${BOLD}${CYAN}━━━ WSF ► PHASE ${event.phaseNumber}: ${event.phaseName} ━━━${RESET}`;
 
-      case GSDEventType.PhaseComplete:
+      case WSFEventType.PhaseComplete:
         return `[${time}] [PHASE] Phase ${event.phaseNumber} complete — success: ${event.success}, cost: ${usd(event.totalCostUsd)}, running: ${usd(this.runningCostUsd)}`;
 
-      case GSDEventType.PhaseStepStart:
+      case WSFEventType.PhaseStepStart:
         return `${CYAN}◆ ${event.step}${RESET}`;
 
-      case GSDEventType.PhaseStepComplete:
+      case WSFEventType.PhaseStepComplete:
         return event.success
           ? `${GREEN}✓ ${event.step}${RESET} ${DIM}${event.durationMs}ms${RESET}`
           : `${RED}✗ ${event.step}${RESET} ${DIM}${event.durationMs}ms${RESET}`;
 
-      case GSDEventType.WaveStart:
+      case WSFEventType.WaveStart:
         return `${YELLOW}⟫ Wave ${event.waveNumber} (${event.planCount} plans)${RESET}`;
 
-      case GSDEventType.WaveComplete:
+      case WSFEventType.WaveComplete:
         return `[${time}] [WAVE] Wave ${event.waveNumber} complete — ${GREEN}${event.successCount} success${RESET}, ${RED}${event.failureCount} failed${RESET}, ${event.durationMs}ms`;
 
-      case GSDEventType.CostUpdate: {
+      case WSFEventType.CostUpdate: {
         this.runningCostUsd += event.sessionCostUsd;
         return `${DIM}[${time}] Cost: session ${usd(event.sessionCostUsd)}, running ${usd(this.runningCostUsd)}${RESET}`;
       }
 
-      case GSDEventType.MilestoneStart:
-        return `${BOLD}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${RESET}\n${BOLD}  GSD Milestone — ${event.phaseCount} phases${RESET}\n${BOLD}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${RESET}`;
+      case WSFEventType.MilestoneStart:
+        return `${BOLD}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${RESET}\n${BOLD}  WSF Milestone — ${event.phaseCount} phases${RESET}\n${BOLD}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${RESET}`;
 
-      case GSDEventType.MilestoneComplete:
+      case WSFEventType.MilestoneComplete:
         return `${BOLD}━━━ Milestone complete — success: ${event.success}, cost: ${usd(event.totalCostUsd)}, running: ${usd(this.runningCostUsd)} ━━━${RESET}`;
 
-      case GSDEventType.AssistantText:
+      case WSFEventType.AssistantText:
         return `${DIM}[${time}] ${truncate(event.text, 200)}${RESET}`;
 
-      case GSDEventType.InitResearchSpawn:
+      case WSFEventType.InitResearchSpawn:
         return `${CYAN}◆ Spawning ${event.sessionCount} researchers...${RESET}`;
 
       // Generic fallback for event types without specific formatting

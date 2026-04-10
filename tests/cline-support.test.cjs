@@ -9,11 +9,11 @@ describe('Cline runtime support', () => {
     assert.ok(fs.existsSync(p), '.clinerules should exist at repo root');
   });
 
-  test('.clinerules references GSD workflow enforcement', () => {
+  test('.clinerules references WSF workflow enforcement', () => {
     const content = fs.readFileSync(path.join(__dirname, '..', '.clinerules'), 'utf-8');
     assert.ok(
-      content.includes('gsd') || content.includes('GSD') || content.includes('workflow'),
-      '.clinerules should mention GSD workflows'
+      content.includes('wsf') || content.includes('WSF') || content.includes('workflow'),
+      '.clinerules should mention WSF workflows'
     );
   });
 

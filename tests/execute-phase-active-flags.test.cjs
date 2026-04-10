@@ -11,11 +11,11 @@ const assert = require('node:assert/strict');
 const fs = require('fs');
 const path = require('path');
 
-const COMMAND_PATH = path.join(__dirname, '..', 'commands', 'gsd', 'execute-phase.md');
+const COMMAND_PATH = path.join(__dirname, '..', 'commands', 'wsf', 'execute-phase.md');
 
 describe('execute-phase command: active flags are explicit', () => {
   test('command file exists', () => {
-    assert.ok(fs.existsSync(COMMAND_PATH), 'commands/gsd/execute-phase.md should exist');
+    assert.ok(fs.existsSync(COMMAND_PATH), 'commands/wsf/execute-phase.md should exist');
   });
 
   test('objective says documented flags are not implied active', () => {

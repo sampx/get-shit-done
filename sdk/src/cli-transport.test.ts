@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { PassThrough } from 'node:stream';
 import { CLITransport } from './cli-transport.js';
-import { GSDEventType, type GSDEvent, type GSDEventBase } from './types.js';
+import { WSFEventType, type WSFEvent, type WSFEventBase } from './types.js';
 
 // ─── ANSI constants (mirror the source for readable assertions) ──────────────
 
@@ -15,7 +15,7 @@ const DIM = '\x1b[90m';
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
-function makeBase(overrides: Partial<GSDEventBase> = {}): Omit<GSDEventBase, 'type'> {
+function makeBase(overrides: Partial<WSFEventBase> = {}): Omit<WSFEventBase, 'type'> {
   return {
     timestamp: '2025-06-15T14:30:45.123Z',
     sessionId: 'test-session',
@@ -41,11 +41,11 @@ describe('CLITransport', () => {
 
     transport.onEvent({
       ...makeBase(),
-      type: GSDEventType.SessionInit,
+      type: WSFEventType.SessionInit,
       model: 'claude-sonnet-4-20250514',
       tools: ['Read', 'Write', 'Bash'],
       cwd: '/home/project',
-    } as GSDEvent);
+    } as WSFEvent);
 
     const output = readOutput(stream);
     expect(output).toBe(
@@ -59,13 +59,13 @@ describe('CLITransport', () => {
 
     transport.onEvent({
       ...makeBase(),
-      type: GSDEventType.SessionComplete,
+      type: WSFEventType.SessionComplete,
       success: true,
       totalCostUsd: 1.234,
       durationMs: 45600,
       numTurns: 12,
       result: 'done',
-    } as GSDEvent);
+    } as WSFEvent);
 
     const output = readOutput(stream);
     expect(output).toBe(
@@ -79,14 +79,14 @@ describe('CLITransport', () => {
 
     transport.onEvent({
       ...makeBase(),
-      type: GSDEventType.SessionError,
+      type: WSFEventType.SessionError,
       success: false,
       totalCostUsd: 0.5,
       durationMs: 3000,
       numTurns: 2,
       errorSubtype: 'tool_error',
       errors: ['file not found', 'permission denied'],
-    } as GSDEvent);
+    } as WSFEvent);
 
     const output = readOutput(stream);
     expect(output).toBe(
@@ -100,25 +100,25 @@ describe('CLITransport', () => {
 
     transport.onEvent({
       ...makeBase(),
-      type: GSDEventType.PhaseStart,
+      type: WSFEventType.PhaseStart,
       phaseNumber: '01',
       phaseName: 'Authentication',
-    } as GSDEvent);
+    } as WSFEvent);
 
     transport.onEvent({
       ...makeBase(),
-      type: GSDEventType.PhaseComplete,
+      type: WSFEventType.PhaseComplete,
       phaseNumber: '01',
       phaseName: 'Authentication',
       success: true,
       totalCostUsd: 2.50,
       totalDurationMs: 60000,
       stepsCompleted: 5,
-    } as GSDEvent);
+    } as WSFEvent);
 
     const output = readOutput(stream);
     const lines = output.split('\n');
-    expect(lines[0]).toBe(`${BOLD}${CYAN}━━━ GSD ► PHASE 01: Authentication ━━━${RESET}`);
+    expect(lines[0]).toBe(`${BOLD}${CYAN}━━━ WSF ► PHASE 01: Authentication ━━━${RESET}`);
     expect(lines[1]).toBe('[14:30:45] [PHASE] Phase 01 complete — success: true, cost: $2.50, running: $0.00');
   });
 
@@ -130,11 +130,11 @@ describe('CLITransport', () => {
 
     transport.onEvent({
       ...makeBase(),
-      type: GSDEventType.ToolCall,
+      type: WSFEventType.ToolCall,
       toolName: 'Write',
       toolUseId: 'tool-123',
       input: longInput,
-    } as GSDEvent);
+    } as WSFEvent);
 
     const output = readOutput(stream);
     expect(output).toMatch(/^\[14:30:45\] \[TOOL\] Write\(.+…\)$/);
@@ -149,25 +149,25 @@ describe('CLITransport', () => {
 
     transport.onEvent({
       ...makeBase(),
-      type: GSDEventType.MilestoneStart,
+      type: WSFEventType.MilestoneStart,
       phaseCount: 3,
       prompt: 'build the app',
-    } as GSDEvent);
+    } as WSFEvent);
 
     transport.onEvent({
       ...makeBase(),
-      type: GSDEventType.MilestoneComplete,
+      type: WSFEventType.MilestoneComplete,
       success: true,
       totalCostUsd: 8.75,
       totalDurationMs: 300000,
       phasesCompleted: 3,
-    } as GSDEvent);
+    } as WSFEvent);
 
     const output = readOutput(stream);
     const lines = output.split('\n');
     // MilestoneStart emits 3 lines (top bar, text, bottom bar)
     expect(lines[0]).toBe(`${BOLD}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${RESET}`);
-    expect(lines[1]).toBe(`${BOLD}  GSD Milestone — 3 phases${RESET}`);
+    expect(lines[1]).toBe(`${BOLD}  WSF Milestone — 3 phases${RESET}`);
     expect(lines[2]).toBe(`${BOLD}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${RESET}`);
     expect(lines[3]).toBe(`${BOLD}━━━ Milestone complete — success: true, cost: $8.75, running: $0.00 ━━━${RESET}`);
   });
@@ -185,11 +185,11 @@ describe('CLITransport', () => {
     // Use a known event type that hits the default/fallback branch
     transport.onEvent({
       ...makeBase(),
-      type: GSDEventType.ToolProgress,
+      type: WSFEventType.ToolProgress,
       toolName: 'Bash',
       toolUseId: 'tool-456',
       elapsedSeconds: 12,
-    } as GSDEvent);
+    } as WSFEvent);
 
     const output = readOutput(stream);
     expect(output).toBe('[14:30:45] [EVENT] tool_progress');
@@ -203,9 +203,9 @@ describe('CLITransport', () => {
 
     transport.onEvent({
       ...makeBase(),
-      type: GSDEventType.AssistantText,
+      type: WSFEventType.AssistantText,
       text: longText,
-    } as GSDEvent);
+    } as WSFEvent);
 
     const output = readOutput(stream);
     expect(output).toMatch(new RegExp(`^${escRe(DIM)}\\[14:30:45\\] A+…${escRe(RESET)}$`));
@@ -221,22 +221,22 @@ describe('CLITransport', () => {
 
     transport.onEvent({
       ...makeBase(),
-      type: GSDEventType.WaveStart,
+      type: WSFEventType.WaveStart,
       phaseNumber: '01',
       waveNumber: 2,
       planCount: 4,
       planIds: ['plan-a', 'plan-b', 'plan-c', 'plan-d'],
-    } as GSDEvent);
+    } as WSFEvent);
 
     transport.onEvent({
       ...makeBase(),
-      type: GSDEventType.WaveComplete,
+      type: WSFEventType.WaveComplete,
       phaseNumber: '01',
       waveNumber: 2,
       successCount: 3,
       failureCount: 1,
       durationMs: 25000,
-    } as GSDEvent);
+    } as WSFEvent);
 
     const output = readOutput(stream);
     const lines = output.split('\n');
@@ -254,10 +254,10 @@ describe('CLITransport', () => {
 
     transport.onEvent({
       ...makeBase(),
-      type: GSDEventType.PhaseStepStart,
+      type: WSFEventType.PhaseStepStart,
       phaseNumber: '01',
       step: 'research',
-    } as GSDEvent);
+    } as WSFEvent);
 
     const output = readOutput(stream);
     expect(output).toBe(`${CYAN}◆ research${RESET}`);
@@ -269,21 +269,21 @@ describe('CLITransport', () => {
 
     transport.onEvent({
       ...makeBase(),
-      type: GSDEventType.PhaseStepComplete,
+      type: WSFEventType.PhaseStepComplete,
       phaseNumber: '01',
       step: 'plan',
       success: true,
       durationMs: 5200,
-    } as GSDEvent);
+    } as WSFEvent);
 
     transport.onEvent({
       ...makeBase(),
-      type: GSDEventType.PhaseStepComplete,
+      type: WSFEventType.PhaseStepComplete,
       phaseNumber: '01',
       step: 'execute',
       success: false,
       durationMs: 12000,
-    } as GSDEvent);
+    } as WSFEvent);
 
     const output = readOutput(stream);
     const lines = output.split('\n');
@@ -297,10 +297,10 @@ describe('CLITransport', () => {
 
     transport.onEvent({
       ...makeBase(),
-      type: GSDEventType.InitResearchSpawn,
+      type: WSFEventType.InitResearchSpawn,
       sessionCount: 4,
       researchTypes: ['stack', 'features', 'architecture', 'pitfalls'],
-    } as GSDEvent);
+    } as WSFEvent);
 
     const output = readOutput(stream);
     expect(output).toBe(`${CYAN}◆ Spawning 4 researchers...${RESET}`);
@@ -313,18 +313,18 @@ describe('CLITransport', () => {
     // First cost update
     transport.onEvent({
       ...makeBase(),
-      type: GSDEventType.CostUpdate,
+      type: WSFEventType.CostUpdate,
       sessionCostUsd: 0.50,
       cumulativeCostUsd: 0.50,
-    } as GSDEvent);
+    } as WSFEvent);
 
     // Second cost update
     transport.onEvent({
       ...makeBase(),
-      type: GSDEventType.CostUpdate,
+      type: WSFEventType.CostUpdate,
       sessionCostUsd: 0.75,
       cumulativeCostUsd: 1.25,
-    } as GSDEvent);
+    } as WSFEvent);
 
     const output = readOutput(stream);
     const lines = output.split('\n');
@@ -339,30 +339,30 @@ describe('CLITransport', () => {
     // Accumulate some cost
     transport.onEvent({
       ...makeBase(),
-      type: GSDEventType.CostUpdate,
+      type: WSFEventType.CostUpdate,
       sessionCostUsd: 1.50,
       cumulativeCostUsd: 1.50,
-    } as GSDEvent);
+    } as WSFEvent);
 
     transport.onEvent({
       ...makeBase(),
-      type: GSDEventType.PhaseComplete,
+      type: WSFEventType.PhaseComplete,
       phaseNumber: '02',
       phaseName: 'Build',
       success: true,
       totalCostUsd: 1.50,
       totalDurationMs: 30000,
       stepsCompleted: 3,
-    } as GSDEvent);
+    } as WSFEvent);
 
     transport.onEvent({
       ...makeBase(),
-      type: GSDEventType.MilestoneComplete,
+      type: WSFEventType.MilestoneComplete,
       success: true,
       totalCostUsd: 1.50,
       totalDurationMs: 30000,
       phasesCompleted: 2,
-    } as GSDEvent);
+    } as WSFEvent);
 
     const output = readOutput(stream);
     const lines = output.split('\n');

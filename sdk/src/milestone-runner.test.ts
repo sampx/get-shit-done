@@ -3,14 +3,14 @@ import type {
   PhaseRunnerResult,
   RoadmapPhaseInfo,
   RoadmapAnalysis,
-  GSDEvent,
+  WSFEvent,
   MilestoneRunnerOptions,
 } from './types.js';
-import { GSDEventType } from './types.js';
+import { WSFEventType } from './types.js';
 
 // ─── Mock modules ────────────────────────────────────────────────────────────
 
-// Mock the heavy dependencies that GSD constructor + runPhase pull in
+// Mock the heavy dependencies that WSF constructor + runPhase pull in
 vi.mock('./plan-parser.js', () => ({
   parsePlan: vi.fn(),
   parsePlanFile: vi.fn(),
@@ -36,7 +36,7 @@ vi.mock('./prompt-builder.js', () => ({
 
 vi.mock('./event-stream.js', () => {
   return {
-    GSDEventStream: vi.fn().mockImplementation(() => ({
+    WSFEventStream: vi.fn().mockImplementation(() => ({
       emitEvent: vi.fn(),
       on: vi.fn(),
       emit: vi.fn(),
@@ -64,18 +64,18 @@ vi.mock('./phase-prompt.js', () => ({
   PHASE_WORKFLOW_MAP: {},
 }));
 
-vi.mock('./gsd-tools.js', () => ({
-  GSDTools: vi.fn().mockImplementation(() => ({
+vi.mock('./wsf-tools.js', () => ({
+  WSFTools: vi.fn().mockImplementation(() => ({
     roadmapAnalyze: vi.fn(),
   })),
-  GSDToolsError: class extends Error {
-    name = 'GSDToolsError';
+  WSFToolsError: class extends Error {
+    name = 'WSFToolsError';
   },
-  resolveGsdToolsPath: vi.fn().mockReturnValue('/mock/gsd-tools.cjs'),
+  resolveWsfToolsPath: vi.fn().mockReturnValue('/mock/wsf-tools.cjs'),
 }));
 
-import { GSD } from './index.js';
-import { GSDTools } from './gsd-tools.js';
+import { WSF } from './index.js';
+import { WSFTools } from './wsf-tools.js';
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
@@ -107,25 +107,25 @@ function makeAnalysis(phases: RoadmapPhaseInfo[]): RoadmapAnalysis {
 
 // ─── Tests ───────────────────────────────────────────────────────────────────
 
-describe('GSD.run()', () => {
-  let gsd: GSD;
+describe('WSF.run()', () => {
+  let wsf- WSF;
   let mockRoadmapAnalyze: ReturnType<typeof vi.fn>;
-  let events: GSDEvent[];
+  let events: WSFEvent[];
 
   beforeEach(() => {
     vi.clearAllMocks();
 
-    gsd = new GSD({ projectDir: '/tmp/test-project' });
+    wsf = new WSF({ projectDir: '/tmp/test-project' });
     events = [];
 
     // Capture emitted events
-    (gsd.eventStream.emitEvent as ReturnType<typeof vi.fn>).mockImplementation(
-      (event: GSDEvent) => events.push(event),
+    (wsf.eventStream.emitEvent as ReturnType<typeof vi.fn>).mockImplementation(
+      (event: WSFEvent) => events.push(event),
     );
 
-    // Wire mock roadmapAnalyze on the GSDTools instance
+    // Wire mock roadmapAnalyze on the WSFTools instance
     mockRoadmapAnalyze = vi.fn();
-    vi.mocked(GSDTools).mockImplementation(
+    vi.mocked(WSFTools).mockImplementation(
       () =>
         ({
           roadmapAnalyze: mockRoadmapAnalyze,
@@ -150,11 +150,11 @@ describe('GSD.run()', () => {
         makePhaseInfo({ number: '2', roadmap_complete: true }),
       ])); // after phase 2
 
-    const runPhaseSpy = vi.spyOn(gsd, 'runPhase')
+    const runPhaseSpy = vi.spyOn(wsf, 'runPhase')
       .mockResolvedValueOnce(makePhaseResult({ phaseNumber: '1' }))
       .mockResolvedValueOnce(makePhaseResult({ phaseNumber: '2' }));
 
-    const result = await gsd.run('build the app');
+    const result = await wsf.run('build the app');
 
     expect(result.success).toBe(true);
     expect(result.phases).toHaveLength(2);
@@ -178,10 +178,10 @@ describe('GSD.run()', () => {
         makePhaseInfo({ number: '3', roadmap_complete: true }),
       ]));
 
-    const runPhaseSpy = vi.spyOn(gsd, 'runPhase')
+    const runPhaseSpy = vi.spyOn(wsf, 'runPhase')
       .mockResolvedValueOnce(makePhaseResult({ phaseNumber: '2' }));
 
-    const result = await gsd.run('build it');
+    const result = await wsf.run('build it');
 
     expect(result.success).toBe(true);
     expect(result.phases).toHaveLength(1);
@@ -215,12 +215,12 @@ describe('GSD.run()', () => {
         makePhaseInfo({ number: '2', roadmap_complete: true }),
       ]));
 
-    const runPhaseSpy = vi.spyOn(gsd, 'runPhase')
+    const runPhaseSpy = vi.spyOn(wsf, 'runPhase')
       .mockResolvedValueOnce(makePhaseResult({ phaseNumber: '1' }))
       .mockResolvedValueOnce(makePhaseResult({ phaseNumber: '1.5', phaseName: 'Hotfix' }))
       .mockResolvedValueOnce(makePhaseResult({ phaseNumber: '2' }));
 
-    const result = await gsd.run('build it');
+    const result = await wsf.run('build it');
 
     expect(result.success).toBe(true);
     expect(result.phases).toHaveLength(3);
@@ -244,11 +244,11 @@ describe('GSD.run()', () => {
         makePhaseInfo({ number: '2', roadmap_complete: true }),
       ]));
 
-    vi.spyOn(gsd, 'runPhase')
+    vi.spyOn(wsf, 'runPhase')
       .mockResolvedValueOnce(makePhaseResult({ totalCostUsd: 1.25 }))
       .mockResolvedValueOnce(makePhaseResult({ totalCostUsd: 0.75 }));
 
-    const result = await gsd.run('build it');
+    const result = await wsf.run('build it');
 
     expect(result.totalCostUsd).toBeCloseTo(2.0, 2);
   });
@@ -262,13 +262,13 @@ describe('GSD.run()', () => {
         makePhaseInfo({ number: '1', roadmap_complete: true }),
       ]));
 
-    vi.spyOn(gsd, 'runPhase')
+    vi.spyOn(wsf, 'runPhase')
       .mockResolvedValueOnce(makePhaseResult({ totalCostUsd: 0.50 }));
 
-    await gsd.run('build it');
+    await wsf.run('build it');
 
-    const startEvents = events.filter(e => e.type === GSDEventType.MilestoneStart);
-    const completeEvents = events.filter(e => e.type === GSDEventType.MilestoneComplete);
+    const startEvents = events.filter(e => e.type === WSFEventType.MilestoneStart);
+    const completeEvents = events.filter(e => e.type === WSFEventType.MilestoneComplete);
 
     expect(startEvents).toHaveLength(1);
     expect(completeEvents).toHaveLength(1);
@@ -290,10 +290,10 @@ describe('GSD.run()', () => {
         makePhaseInfo({ number: '2', roadmap_complete: false }),
       ]));
 
-    vi.spyOn(gsd, 'runPhase')
+    vi.spyOn(wsf, 'runPhase')
       .mockResolvedValueOnce(makePhaseResult({ phaseNumber: '1', success: false }));
 
-    const result = await gsd.run('build it');
+    const result = await wsf.run('build it');
 
     expect(result.success).toBe(false);
     expect(result.phases).toHaveLength(1);
@@ -304,9 +304,9 @@ describe('GSD.run()', () => {
     mockRoadmapAnalyze
       .mockResolvedValueOnce(makeAnalysis([]));
 
-    const runPhaseSpy = vi.spyOn(gsd, 'runPhase');
+    const runPhaseSpy = vi.spyOn(wsf, 'runPhase');
 
-    const result = await gsd.run('build it');
+    const result = await wsf.run('build it');
 
     expect(result.success).toBe(true);
     expect(result.phases).toHaveLength(0);
@@ -343,12 +343,12 @@ describe('GSD.run()', () => {
       ]));
 
     const executionOrder: string[] = [];
-    vi.spyOn(gsd, 'runPhase').mockImplementation(async (phaseNumber: string) => {
+    vi.spyOn(wsf, 'runPhase').mockImplementation(async (phaseNumber: string) => {
       executionOrder.push(phaseNumber);
       return makePhaseResult({ phaseNumber });
     });
 
-    await gsd.run('build it');
+    await wsf.run('build it');
 
     // Numeric order: 1.5 → 2 → 10 (not lexicographic: "10" < "2")
     expect(executionOrder).toEqual(['1.5', '2', '10']);
@@ -361,10 +361,10 @@ describe('GSD.run()', () => {
         makePhaseInfo({ number: '2', roadmap_complete: false }),
       ]));
 
-    vi.spyOn(gsd, 'runPhase')
+    vi.spyOn(wsf, 'runPhase')
       .mockRejectedValueOnce(new Error('Unexpected explosion'));
 
-    const result = await gsd.run('build it');
+    const result = await wsf.run('build it');
 
     expect(result.success).toBe(false);
     expect(result.phases).toHaveLength(1);
@@ -381,7 +381,7 @@ describe('GSD.run()', () => {
         makePhaseInfo({ number: '1', roadmap_complete: true }),
       ]));
 
-    const runPhaseSpy = vi.spyOn(gsd, 'runPhase')
+    const runPhaseSpy = vi.spyOn(wsf, 'runPhase')
       .mockResolvedValueOnce(makePhaseResult());
 
     const opts: MilestoneRunnerOptions = {
@@ -390,7 +390,7 @@ describe('GSD.run()', () => {
       onPhaseComplete: vi.fn(),
     };
 
-    await gsd.run('build it', opts);
+    await wsf.run('build it', opts);
 
     expect(runPhaseSpy).toHaveBeenCalledWith('1', opts);
   });
@@ -402,10 +402,10 @@ describe('GSD.run()', () => {
         makePhaseInfo({ number: '2', roadmap_complete: false }),
       ]));
 
-    vi.spyOn(gsd, 'runPhase')
+    vi.spyOn(wsf, 'runPhase')
       .mockResolvedValueOnce(makePhaseResult({ phaseNumber: '1' }));
 
-    const result = await gsd.run('build it', {
+    const result = await wsf.run('build it', {
       onPhaseComplete: async () => 'stop',
     });
 

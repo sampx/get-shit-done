@@ -1,5 +1,5 @@
 /**
- * GSD Tools Tests - worktree cleanup after executor completes
+ * WSF Tools Tests - worktree cleanup after executor completes
  *
  * Validates that execute-phase.md and quick.md include post-execution
  * worktree cleanup logic (merge branch, remove worktree, delete branch).
@@ -13,8 +13,8 @@ const fs = require('fs');
 const path = require('path');
 
 describe('worktree cleanup after executor completes (#1496)', () => {
-  const executePhasePath = path.join(__dirname, '..', 'get-shit-done', 'workflows', 'execute-phase.md');
-  const quickPath = path.join(__dirname, '..', 'get-shit-done', 'workflows', 'quick.md');
+  const executePhasePath = path.join(__dirname, '..', 'wsf', 'workflows', 'execute-phase.md');
+  const quickPath = path.join(__dirname, '..', 'wsf', 'workflows', 'quick.md');
 
   test('execute-phase.md includes worktree cleanup step', () => {
     const content = fs.readFileSync(executePhasePath, 'utf8');

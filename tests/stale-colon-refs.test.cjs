@@ -1,5 +1,5 @@
 /**
- * Stale /gsd: colon reference detection test
+ * Stale /wsf: colon reference detection test
  *
  * Guards against regression of bug #1748: after the command naming migration
  * from colon to hyphen format, no stale colon references should remain in
@@ -46,18 +46,18 @@ function collectFiles(dir, extensions, results = []) {
 }
 
 /**
- * Determine whether a /gsd: match in a test file is a legitimate test input
+ * Determine whether a /wsf: match in a test file is a legitimate test input
  * (i.e., the input string fed to a colon-to-hyphen converter).
  */
 function isTestInput(filePath, line) {
   const rel = path.relative(ROOT, filePath).replace(/\\/g, '/');
 
-  // SDK test files (.ts) that test sanitizer stripping of /gsd: patterns
+  // SDK test files (.ts) that test sanitizer stripping of /wsf: patterns
   if (rel === 'sdk/src/prompt-sanitizer.test.ts') return true;
   if (rel === 'sdk/src/init-runner.test.ts') return true;
   if (rel === 'sdk/src/phase-prompt.test.ts') return true;
 
-  // Conversion test files: input strings to convert* functions contain /gsd:
+  // Conversion test files: input strings to convert* functions contain /wsf:
   const conversionTestFiles = [
     'tests/windsurf-conversion.test.cjs',
     'tests/augment-conversion.test.cjs',
@@ -70,7 +70,7 @@ function isTestInput(filePath, line) {
 
   if (conversionTestFiles.includes(rel)) {
     const trimmed = line.trim();
-    // JSDoc block-comment lines with /gsd: in description are stale
+    // JSDoc block-comment lines with /wsf: in description are stale
     if (/^\*/.test(trimmed)) return false;
     // Everything else in conversion test files is a test input
     return true;
@@ -79,13 +79,13 @@ function isTestInput(filePath, line) {
   return false;
 }
 
-describe('No stale /gsd: colon references (#1748)', () => {
-  test('all /gsd: references should be hyphenated except test inputs', () => {
+describe('No stale /wsf: colon references (#1748)', () => {
+  test('all /wsf: references should be hyphenated except test inputs', () => {
     const extensions = new Set(['.md', '.js', '.cjs', '.ts', '.yml', '.sh', '.svg']);
     const files = collectFiles(ROOT, extensions);
 
     const staleRefs = [];
-    const pattern = /\/gsd:[a-z]/g;
+    const pattern = /\/wsf:[a-z]/g;
 
     for (const filePath of files) {
       const content = fs.readFileSync(filePath, 'utf8');
@@ -105,7 +105,7 @@ describe('No stale /gsd: colon references (#1748)', () => {
 
     if (staleRefs.length > 0) {
       assert.fail(
-        `Found ${staleRefs.length} stale /gsd: colon reference(s) that should use /gsd- hyphen format:\n${staleRefs.join('\n')}`
+        `Found ${staleRefs.length} stale /wsf: colon reference(s) that should use /wsf- hyphen format:\n${staleRefs.join('\n')}`
       );
     }
   });

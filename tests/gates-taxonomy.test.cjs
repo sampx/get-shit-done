@@ -10,13 +10,13 @@ const fs = require('fs');
 const path = require('path');
 
 const ROOT = path.join(__dirname, '..');
-const GATES_REF = path.join(ROOT, 'get-shit-done', 'references', 'gates.md');
+const GATES_REF = path.join(ROOT, 'wsf', 'references', 'gates.md');
 
 describe('gates taxonomy (#1715)', () => {
   test('reference file exists', () => {
     assert.ok(
       fs.existsSync(GATES_REF),
-      'get-shit-done/references/gates.md must exist'
+      'wsf/references/gates.md must exist'
     );
   });
 
@@ -69,7 +69,7 @@ describe('gates taxonomy (#1715)', () => {
   });
 
   test('plan-phase.md references gates.md', () => {
-    const planPhase = path.join(ROOT, 'get-shit-done', 'workflows', 'plan-phase.md');
+    const planPhase = path.join(ROOT, 'wsf', 'workflows', 'plan-phase.md');
     const content = fs.readFileSync(planPhase, 'utf-8');
     assert.ok(
       content.includes('references/gates.md'),
@@ -78,7 +78,7 @@ describe('gates taxonomy (#1715)', () => {
   });
 
   test('execute-phase.md references gates.md', () => {
-    const execPhase = path.join(ROOT, 'get-shit-done', 'workflows', 'execute-phase.md');
+    const execPhase = path.join(ROOT, 'wsf', 'workflows', 'execute-phase.md');
     const content = fs.readFileSync(execPhase, 'utf-8');
     assert.ok(
       content.includes('references/gates.md'),
@@ -86,31 +86,31 @@ describe('gates taxonomy (#1715)', () => {
     );
   });
 
-  test('gsd-plan-checker.md references gates.md in required_reading block', () => {
-    const planChecker = path.join(ROOT, 'agents', 'gsd-plan-checker.md');
+  test('wsf-plan-checker.md references gates.md in required_reading block', () => {
+    const planChecker = path.join(ROOT, 'agents', 'wsf-plan-checker.md');
     const content = fs.readFileSync(planChecker, 'utf-8');
     assert.ok(
       content.includes('<required_reading>'),
-      'gsd-plan-checker.md must have a <required_reading> block'
+      'wsf-plan-checker.md must have a <required_reading> block'
     );
     const reqBlock = content.split('<required_reading>')[1].split('</required_reading>')[0];
     assert.ok(
       reqBlock.includes('references/gates.md'),
-      'gsd-plan-checker.md must reference gates.md inside <required_reading>'
+      'wsf-plan-checker.md must reference gates.md inside <required_reading>'
     );
   });
 
-  test('gsd-verifier.md references gates.md in required_reading block', () => {
-    const verifier = path.join(ROOT, 'agents', 'gsd-verifier.md');
+  test('wsf-verifier.md references gates.md in required_reading block', () => {
+    const verifier = path.join(ROOT, 'agents', 'wsf-verifier.md');
     const content = fs.readFileSync(verifier, 'utf-8');
     assert.ok(
       content.includes('<required_reading>'),
-      'gsd-verifier.md must have a <required_reading> block'
+      'wsf-verifier.md must have a <required_reading> block'
     );
     const reqBlock = content.split('<required_reading>')[1].split('</required_reading>')[0];
     assert.ok(
       reqBlock.includes('references/gates.md'),
-      'gsd-verifier.md must reference gates.md inside <required_reading>'
+      'wsf-verifier.md must reference gates.md inside <required_reading>'
     );
   });
 

@@ -8,12 +8,12 @@ const { test, describe, beforeEach, afterEach } = require('node:test');
 const assert = require('node:assert/strict');
 const fs = require('fs');
 const path = require('path');
-const { runGsdTools, createTempProject, createTempGitProject, cleanup } = require('./helpers.cjs');
+const { runWsfTools, createTempProject, createTempGitProject, cleanup } = require('./helpers.cjs');
 
 const {
   PROFILING_QUESTIONS,
   CLAUDE_INSTRUCTIONS,
-} = require('../get-shit-done/bin/lib/profile-output.cjs');
+} = require('../wsf/bin/lib/profile-output.cjs');
 
 // ─── PROFILING_QUESTIONS data ─────────────────────────────────────────────────
 
@@ -106,7 +106,7 @@ describe('write-profile command', () => {
     const analysisPath = path.join(tmpDir, 'analysis.json');
     fs.writeFileSync(analysisPath, JSON.stringify(analysis));
 
-    const result = runGsdTools(['write-profile', '--input', analysisPath, '--raw'], tmpDir);
+    const result = runWsfTools(['write-profile', '--input', analysisPath, '--raw'], tmpDir);
     assert.ok(result.success, `Failed: ${result.error}`);
     const out = JSON.parse(result.output);
     assert.ok(out.profile_path, 'should return profile_path');
@@ -114,7 +114,7 @@ describe('write-profile command', () => {
   });
 
   test('errors when --input is missing', () => {
-    const result = runGsdTools('write-profile --raw', tmpDir);
+    const result = runWsfTools('write-profile --raw', tmpDir);
     assert.ok(!result.success, 'should fail without --input');
     assert.ok(result.error.includes('--input'), 'should mention --input');
   });
@@ -139,7 +139,7 @@ describe('generate-claude-md command', () => {
 
   test('generates CLAUDE.md with --auto flag', () => {
     const outputPath = path.join(tmpDir, 'CLAUDE.md');
-    const result = runGsdTools(['generate-claude-md', '--output', outputPath, '--auto', '--raw'], tmpDir);
+    const result = runWsfTools(['generate-claude-md', '--output', outputPath, '--auto', '--raw'], tmpDir);
     assert.ok(result.success, `Failed: ${result.error}`);
 
     if (fs.existsSync(outputPath)) {
@@ -152,7 +152,7 @@ describe('generate-claude-md command', () => {
     const outputPath = path.join(tmpDir, 'CLAUDE.md');
     fs.writeFileSync(outputPath, '# Custom CLAUDE.md\n\nUser content.\n');
 
-    const result = runGsdTools(['generate-claude-md', '--output', outputPath, '--auto', '--raw'], tmpDir);
+    const result = runWsfTools(['generate-claude-md', '--output', outputPath, '--auto', '--raw'], tmpDir);
     // Should merge, not overwrite
     const content = fs.readFileSync(outputPath, 'utf-8');
     assert.ok(content.length > 0, 'should still have content');
@@ -173,7 +173,7 @@ describe('generate-dev-preferences command', () => {
   });
 
   test('errors when --analysis is missing', () => {
-    const result = runGsdTools('generate-dev-preferences --raw', tmpDir);
+    const result = runWsfTools('generate-dev-preferences --raw', tmpDir);
     assert.ok(!result.success, 'should fail without --analysis');
     assert.ok(result.error.includes('--analysis'), 'should mention --analysis');
   });
@@ -189,7 +189,7 @@ describe('generate-dev-preferences command', () => {
     const analysisPath = path.join(tmpDir, 'analysis.json');
     fs.writeFileSync(analysisPath, JSON.stringify(analysis));
 
-    const result = runGsdTools(['generate-dev-preferences', '--analysis', analysisPath, '--raw'], tmpDir);
+    const result = runWsfTools(['generate-dev-preferences', '--analysis', analysisPath, '--raw'], tmpDir);
     assert.ok(result.success, `Failed: ${result.error}`);
     const out = JSON.parse(result.output);
     assert.ok(out.command_path || out.command_name, 'should return command output');

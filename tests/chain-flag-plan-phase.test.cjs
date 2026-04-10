@@ -1,5 +1,5 @@
 /**
- * GSD Tools Tests - chain flag preservation in plan-phase
+ * WSF Tools Tests - chain flag preservation in plan-phase
  *
  * Validates that plan-phase.md correctly handles the --chain flag
  * so that discuss→plan→execute auto-advance works without manual
@@ -14,8 +14,8 @@ const fs = require('fs');
 const path = require('path');
 
 describe('plan-phase chain flag preservation (#1620)', () => {
-  const planPath = path.join(__dirname, '..', 'get-shit-done', 'workflows', 'plan-phase.md');
-  const discussPath = path.join(__dirname, '..', 'get-shit-done', 'workflows', 'discuss-phase.md');
+  const planPath = path.join(__dirname, '..', 'wsf', 'workflows', 'plan-phase.md');
+  const discussPath = path.join(__dirname, '..', 'wsf', 'workflows', 'discuss-phase.md');
 
   test('plan-phase sync-flag guard checks both --auto AND --chain', () => {
     const content = fs.readFileSync(planPath, 'utf8');

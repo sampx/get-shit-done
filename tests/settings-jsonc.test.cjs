@@ -1,5 +1,5 @@
 /**
- * GSD Tools Tests - settings.json JSONC (JSON with comments) support
+ * WSF Tools Tests - settings.json JSONC (JSON with comments) support
  *
  * Validates that the installer's readSettings() correctly handles
  * settings.json files containing comments (line and block) without
@@ -141,14 +141,14 @@ describe('stripJsonComments (#1461)', () => {
         "hooks": [
           {
             "type": "command",
-            "command": "node ~/.claude/hooks/gsd-statusline.js"
+            "command": "node ~/.claude/hooks/wsf-statusline.js"
           }
         ]
       }
     ]
   },
   "statusLine": {
-    "command": "node ~/.claude/hooks/gsd-statusline.js",
+    "command": "node ~/.claude/hooks/wsf-statusline.js",
     "refreshInterval": 10
   }
 }`;

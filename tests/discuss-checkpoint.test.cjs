@@ -1,5 +1,5 @@
 /**
- * GSD Tools Tests - discuss-phase incremental checkpoint saves
+ * WSF Tools Tests - discuss-phase incremental checkpoint saves
  *
  * Validates that the discuss-phase workflow includes incremental
  * checkpoint logic to prevent answer loss on session interruption.
@@ -13,7 +13,7 @@ const fs = require('fs');
 const path = require('path');
 
 describe('discuss-phase incremental checkpoint saves (#1485)', () => {
-  const workflowPath = path.join(__dirname, '..', 'get-shit-done', 'workflows', 'discuss-phase.md');
+  const workflowPath = path.join(__dirname, '..', 'wsf', 'workflows', 'discuss-phase.md');
 
   test('workflow writes checkpoint file after each area completes', () => {
     const content = fs.readFileSync(workflowPath, 'utf8');

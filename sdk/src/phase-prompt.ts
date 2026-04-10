@@ -70,13 +70,13 @@ export class PromptFactory {
   private readonly sdkPromptsDir: string;
 
   constructor(options?: {
-    gsdInstallDir?: string;
+    wsfInstallDir?: string;
     agentsDir?: string;
     projectAgentsDir?: string;
     sdkPromptsDir?: string;
   }) {
-    const gsdInstallDir = options?.gsdInstallDir ?? join(homedir(), '.claude', 'get-shit-done');
-    this.workflowsDir = join(gsdInstallDir, 'workflows');
+    const wsfInstallDir = options?.wsfInstallDir ?? join(homedir(), '.claude', 'wsf');
+    this.workflowsDir = join(wsfInstallDir, 'workflows');
     this.agentsDir = options?.agentsDir ?? join(homedir(), '.claude', 'agents');
     this.projectAgentsDir = options?.projectAgentsDir;
     // SDK prompts dir: explicit override → package-relative default via import.meta.url
@@ -156,7 +156,7 @@ export class PromptFactory {
   /**
    * Load the workflow file for a phase type.
    * Tries sdk/prompts/workflows/ first (headless versions), then
-   * falls back to GSD-1 originals in workflowsDir.
+   * falls back to WSF-1 originals in workflowsDir.
    * Returns the raw content, or undefined if not found.
    */
   async loadWorkflowFile(phaseType: PhaseType): Promise<string | undefined> {
@@ -167,10 +167,10 @@ export class PromptFactory {
     try {
       return await readFile(sdkPath, 'utf-8');
     } catch {
-      // Not in sdk/prompts/, fall through to GSD-1 originals
+      // Not in sdk/prompts/, fall through to WSF-1 originals
     }
 
-    // Fall back to GSD-1 originals
+    // Fall back to WSF-1 originals
     const filePath = join(this.workflowsDir, filename);
     try {
       return await readFile(filePath, 'utf-8');

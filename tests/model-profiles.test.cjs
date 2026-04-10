@@ -13,18 +13,18 @@ const {
   VALID_PROFILES,
   formatAgentToModelMapAsTable,
   getAgentToModelMapForProfile,
-} = require('../get-shit-done/bin/lib/model-profiles.cjs');
+} = require('../wsf/bin/lib/model-profiles.cjs');
 
 // ─── MODEL_PROFILES data integrity ────────────────────────────────────────────
 
 describe('MODEL_PROFILES', () => {
-  test('contains all expected GSD agents', () => {
+  test('contains all expected WSF agents', () => {
     const expectedAgents = [
-      'gsd-planner', 'gsd-roadmapper', 'gsd-executor',
-      'gsd-phase-researcher', 'gsd-project-researcher', 'gsd-research-synthesizer',
-      'gsd-debugger', 'gsd-codebase-mapper', 'gsd-verifier',
-      'gsd-plan-checker', 'gsd-integration-checker', 'gsd-nyquist-auditor',
-      'gsd-ui-researcher', 'gsd-ui-checker', 'gsd-ui-auditor',
+      'wsf-planner', 'wsf-roadmapper', 'wsf-executor',
+      'wsf-phase-researcher', 'wsf-project-researcher', 'wsf-research-synthesizer',
+      'wsf-debugger', 'wsf-codebase-mapper', 'wsf-verifier',
+      'wsf-plan-checker', 'wsf-integration-checker', 'wsf-nyquist-auditor',
+      'wsf-ui-researcher', 'wsf-ui-checker', 'wsf-ui-auditor',
     ];
     for (const agent of expectedAgents) {
       assert.ok(MODEL_PROFILES[agent], `Missing agent: ${agent}`);
@@ -70,7 +70,7 @@ describe('VALID_PROFILES', () => {
   });
 
   test('is derived from MODEL_PROFILES keys', () => {
-    const fromData = Object.keys(MODEL_PROFILES['gsd-planner']);
+    const fromData = Object.keys(MODEL_PROFILES['wsf-planner']);
     assert.deepStrictEqual(VALID_PROFILES.sort(), fromData.sort());
   });
 });
@@ -80,37 +80,37 @@ describe('VALID_PROFILES', () => {
 describe('getAgentToModelMapForProfile', () => {
   test('returns correct models for balanced profile', () => {
     const map = getAgentToModelMapForProfile('balanced');
-    assert.strictEqual(map['gsd-planner'], 'opus');
-    assert.strictEqual(map['gsd-codebase-mapper'], 'haiku');
-    assert.strictEqual(map['gsd-verifier'], 'sonnet');
+    assert.strictEqual(map['wsf-planner'], 'opus');
+    assert.strictEqual(map['wsf-codebase-mapper'], 'haiku');
+    assert.strictEqual(map['wsf-verifier'], 'sonnet');
   });
 
   test('returns correct models for budget profile', () => {
     const map = getAgentToModelMapForProfile('budget');
-    assert.strictEqual(map['gsd-planner'], 'sonnet');
-    assert.strictEqual(map['gsd-phase-researcher'], 'haiku');
+    assert.strictEqual(map['wsf-planner'], 'sonnet');
+    assert.strictEqual(map['wsf-phase-researcher'], 'haiku');
   });
 
   test('returns correct models for quality profile', () => {
     const map = getAgentToModelMapForProfile('quality');
-    assert.strictEqual(map['gsd-planner'], 'opus');
-    assert.strictEqual(map['gsd-executor'], 'opus');
+    assert.strictEqual(map['wsf-planner'], 'opus');
+    assert.strictEqual(map['wsf-executor'], 'opus');
   });
 
   test('returns correct models for adaptive profile', () => {
     const map = getAgentToModelMapForProfile('adaptive');
-    assert.strictEqual(map['gsd-planner'], 'opus', 'planner should use opus in adaptive');
-    assert.strictEqual(map['gsd-debugger'], 'opus', 'debugger should use opus in adaptive');
-    assert.strictEqual(map['gsd-executor'], 'sonnet', 'executor should use sonnet in adaptive');
-    assert.strictEqual(map['gsd-codebase-mapper'], 'haiku', 'mapper should use haiku in adaptive');
-    assert.strictEqual(map['gsd-plan-checker'], 'haiku', 'checker should use haiku in adaptive');
+    assert.strictEqual(map['wsf-planner'], 'opus', 'planner should use opus in adaptive');
+    assert.strictEqual(map['wsf-debugger'], 'opus', 'debugger should use opus in adaptive');
+    assert.strictEqual(map['wsf-executor'], 'sonnet', 'executor should use sonnet in adaptive');
+    assert.strictEqual(map['wsf-codebase-mapper'], 'haiku', 'mapper should use haiku in adaptive');
+    assert.strictEqual(map['wsf-plan-checker'], 'haiku', 'checker should use haiku in adaptive');
   });
 
   test('resolution order: override > profile > default', () => {
     // This tests the conceptual resolution — actual runtime test is in resolveModelInternal
     const map = getAgentToModelMapForProfile('adaptive');
     // Profile gives planner opus
-    assert.strictEqual(map['gsd-planner'], 'opus');
+    assert.strictEqual(map['wsf-planner'], 'opus');
     // An override would take precedence (tested via resolveModelInternal in model-alias-map tests)
     // Default fallback is 'sonnet' (core.cjs line 1320)
   });
@@ -126,12 +126,12 @@ describe('getAgentToModelMapForProfile', () => {
 
 describe('formatAgentToModelMapAsTable', () => {
   test('produces a table with header and separator', () => {
-    const map = { 'gsd-planner': 'opus', 'gsd-executor': 'sonnet' };
+    const map = { 'wsf-planner': 'opus', 'wsf-executor': 'sonnet' };
     const table = formatAgentToModelMapAsTable(map);
     assert.ok(table.includes('Agent'), 'should have Agent header');
     assert.ok(table.includes('Model'), 'should have Model header');
     assert.ok(table.includes('─'), 'should have separator line');
-    assert.ok(table.includes('gsd-planner'), 'should list agent');
+    assert.ok(table.includes('wsf-planner'), 'should list agent');
     assert.ok(table.includes('opus'), 'should list model');
   });
 

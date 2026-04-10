@@ -7,8 +7,8 @@ const assert = require('node:assert/strict');
 const fs = require('fs');
 const path = require('path');
 
-const REFERENCE_PATH = path.join(__dirname, '..', 'get-shit-done', 'references', 'planning-config.md');
-const CORE_PATH = path.join(__dirname, '..', 'get-shit-done', 'bin', 'lib', 'core.cjs');
+const REFERENCE_PATH = path.join(__dirname, '..', 'wsf', 'references', 'planning-config.md');
+const CORE_PATH = path.join(__dirname, '..', 'wsf', 'bin', 'lib', 'core.cjs');
 
 describe('config-field-docs', () => {
   let content;

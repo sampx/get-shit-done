@@ -8,7 +8,7 @@ const fs = require('fs');
 const path = require('path');
 const { createTempDir, cleanup } = require('./helpers.cjs');
 
-const CORE_PATH = path.join(__dirname, '..', 'get-shit-done', 'bin', 'lib', 'core.cjs');
+const CORE_PATH = path.join(__dirname, '..', 'wsf', 'bin', 'lib', 'core.cjs');
 
 describe('atomicWriteFileSync', () => {
   let tmpDir;

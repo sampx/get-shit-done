@@ -1,14 +1,14 @@
 /**
- * GSD Tools Test Helpers
+ * WSF Tools Test Helpers
  */
 
 const { execSync, execFileSync } = require('child_process');
 const fs = require('fs');
 const path = require('path');
 
-const TOOLS_PATH = path.join(__dirname, '..', 'get-shit-done', 'bin', 'gsd-tools.cjs');
+const TOOLS_PATH = path.join(__dirname, '..', 'wsf', 'bin', 'wsf-tools.cjs');
 const TEST_ENV_BASE = {
-  GSD_SESSION_KEY: '',
+  WSF_SESSION_KEY: '',
   CODEX_THREAD_ID: '',
   CLAUDE_SESSION_ID: '',
   CLAUDE_CODE_SSE_PORT: '',
@@ -25,16 +25,16 @@ const TEST_ENV_BASE = {
 };
 
 /**
- * Run gsd-tools command.
+ * Run wsf-tools command.
  *
  * @param {string|string[]} args - Command string (shell-interpreted) or array
  *   of arguments (shell-bypassed via execFileSync, safe for JSON and dollar signs).
  * @param {string} cwd - Working directory.
  * @param {object} [env] - Optional env overrides merged on top of process.env.
- *   Pass { HOME: cwd } to sandbox ~/.gsd/ lookups in tests that assert concrete
+ *   Pass { HOME: cwd } to sandbox ~/.wsf/ lookups in tests that assert concrete
  *   config values that could be overridden by a developer's defaults.json.
  */
-function runGsdTools(args, cwd = process.cwd(), env = {}) {
+function runWsfTools(args, cwd = process.cwd(), env = {}) {
   try {
     let result;
     const childEnv = { ...process.env, ...TEST_ENV_BASE, ...env };
@@ -71,19 +71,19 @@ function runGsdTools(args, cwd = process.cwd(), env = {}) {
 }
 
 // Create a bare temp directory (no .planning/ structure)
-function createTempDir(prefix = 'gsd-test-') {
+function createTempDir(prefix = 'wsf-test-') {
   return fs.mkdtempSync(path.join(require('os').tmpdir(), prefix));
 }
 
 // Create temp directory structure
-function createTempProject(prefix = 'gsd-test-') {
+function createTempProject(prefix = 'wsf-test-') {
   const tmpDir = fs.mkdtempSync(path.join(require('os').tmpdir(), prefix));
   fs.mkdirSync(path.join(tmpDir, '.planning', 'phases'), { recursive: true });
   return tmpDir;
 }
 
 // Create temp directory with initialized git repo and at least one commit
-function createTempGitProject(prefix = 'gsd-test-') {
+function createTempGitProject(prefix = 'wsf-test-') {
   const tmpDir = fs.mkdtempSync(path.join(require('os').tmpdir(), prefix));
   fs.mkdirSync(path.join(tmpDir, '.planning', 'phases'), { recursive: true });
 
@@ -107,4 +107,4 @@ function cleanup(tmpDir) {
   fs.rmSync(tmpDir, { recursive: true, force: true });
 }
 
-module.exports = { runGsdTools, createTempDir, createTempProject, createTempGitProject, cleanup, TOOLS_PATH };
+module.exports = { runWsfTools, createTempDir, createTempProject, createTempGitProject, cleanup, TOOLS_PATH };

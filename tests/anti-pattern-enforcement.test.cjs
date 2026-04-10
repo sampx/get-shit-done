@@ -12,9 +12,9 @@ const assert = require('node:assert/strict');
 const fs = require('fs');
 const path = require('path');
 
-const PAUSE_WORK = path.join(__dirname, '..', 'get-shit-done', 'workflows', 'pause-work.md');
-const DISCUSS_PHASE = path.join(__dirname, '..', 'get-shit-done', 'workflows', 'discuss-phase.md');
-const EXECUTE_PHASE = path.join(__dirname, '..', 'get-shit-done', 'workflows', 'execute-phase.md');
+const PAUSE_WORK = path.join(__dirname, '..', 'wsf', 'workflows', 'pause-work.md');
+const DISCUSS_PHASE = path.join(__dirname, '..', 'wsf', 'workflows', 'discuss-phase.md');
+const EXECUTE_PHASE = path.join(__dirname, '..', 'wsf', 'workflows', 'execute-phase.md');
 
 describe('pause-work.md — severity column in Critical Anti-Patterns template', () => {
   test('template includes a Severity column header in the anti-patterns table', () => {

@@ -15,7 +15,7 @@ const DEFAULT_ALLOWED_TOOLS = ['Read', 'Write', 'Edit', 'Bash', 'Grep', 'Glob'];
 // ─── Agent definition parsing ────────────────────────────────────────────────
 
 /**
- * Extract the tools list from a gsd-executor.md agent definition.
+ * Extract the tools list from a wsf-executor.md agent definition.
  * Falls back to DEFAULT_ALLOWED_TOOLS if parsing fails.
  */
 export function parseAgentTools(agentDef: string): string[] {
@@ -35,7 +35,7 @@ export function parseAgentTools(agentDef: string): string[] {
 }
 
 /**
- * Extract the role instructions from a gsd-executor.md agent definition.
+ * Extract the role instructions from a wsf-executor.md agent definition.
  * Returns the <role>...</role> block content, or empty string.
  */
 export function parseAgentRole(agentDef: string): string {
@@ -97,7 +97,7 @@ function formatTask(task: PlanTask, index: number): string {
  * 4. Produce a SUMMARY.md file on completion
  *
  * @param plan - Parsed plan structure from plan-parser
- * @param agentDef - Raw content of gsd-executor.md agent definition (optional)
+ * @param agentDef - Raw content of wsf-executor.md agent definition (optional)
  * @returns Assembled prompt string
  */
 export function buildExecutorPrompt(plan: ParsedPlan, agentDef?: string): string {

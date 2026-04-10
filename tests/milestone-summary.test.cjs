@@ -1,5 +1,5 @@
 /**
- * GSD Milestone Summary Tests
+ * WSF Milestone Summary Tests
  *
  * Validates the milestone-summary command and workflow files exist
  * and follow expected patterns. Tests artifact discovery logic.
@@ -11,17 +11,17 @@ const fs = require('fs');
 const path = require('path');
 
 const repoRoot = path.resolve(__dirname, '..');
-const commandPath = path.join(repoRoot, 'commands', 'gsd', 'milestone-summary.md');
-const workflowPath = path.join(repoRoot, 'get-shit-done', 'workflows', 'milestone-summary.md');
+const commandPath = path.join(repoRoot, 'commands', 'wsf', 'milestone-summary.md');
+const workflowPath = path.join(repoRoot, 'wsf', 'workflows', 'milestone-summary.md');
 
 describe('milestone-summary command', () => {
   test('command file exists', () => {
-    assert.ok(fs.existsSync(commandPath), 'commands/gsd/milestone-summary.md should exist');
+    assert.ok(fs.existsSync(commandPath), 'commands/wsf/milestone-summary.md should exist');
   });
 
   test('command has correct frontmatter name', () => {
     const content = fs.readFileSync(commandPath, 'utf-8');
-    assert.ok(content.includes('name: gsd:milestone-summary'), 'should have correct command name');
+    assert.ok(content.includes('name: wsf-milestone-summary'), 'should have correct command name');
   });
 
   test('command references workflow in execution_context', () => {
@@ -108,7 +108,7 @@ describe('milestone-summary workflow', () => {
     const content = fs.readFileSync(workflowPath, 'utf-8');
     assert.ok(
       content.includes('state record-session'),
-      'should update STATE.md via gsd-tools'
+      'should update STATE.md via wsf-tools'
     );
   });
 
@@ -196,7 +196,7 @@ describe('milestone-summary fixture-based artifact discovery', () => {
   let tmpDir;
 
   beforeEach(() => {
-    tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'gsd-ms-test-'));
+    tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'wsf-ms-test-'));
   });
 
   afterEach(() => {

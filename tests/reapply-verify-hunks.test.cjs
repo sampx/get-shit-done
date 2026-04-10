@@ -1,5 +1,5 @@
 /**
- * GSD Tools Tests - reapply-patches post-merge verification
+ * WSF Tools Tests - reapply-patches post-merge verification
  *
  * Validates that the reapply-patches workflow includes post-merge
  * verification to detect dropped hunks during three-way merge.
@@ -13,7 +13,7 @@ const fs = require('fs');
 const path = require('path');
 
 const WORKFLOW_PATH = path.join(
-  __dirname, '..', 'commands', 'gsd', 'reapply-patches.md'
+  __dirname, '..', 'commands', 'wsf', 'reapply-patches.md'
 );
 
 describe('reapply-patches post-merge verification (#1758)', () => {

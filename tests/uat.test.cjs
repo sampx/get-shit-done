@@ -1,5 +1,5 @@
 /**
- * GSD Tools Tests - UAT Audit
+ * WSF Tools Tests - UAT Audit
  */
 
 'use strict';
@@ -8,7 +8,7 @@ const { test, describe, beforeEach, afterEach } = require('node:test');
 const assert = require('node:assert/strict');
 const fs = require('fs');
 const path = require('path');
-const { runGsdTools, createTempProject, cleanup } = require('./helpers.cjs');
+const { runWsfTools, createTempProject, cleanup } = require('./helpers.cjs');
 
 describe('audit-uat command', () => {
   let tmpDir;
@@ -26,7 +26,7 @@ describe('audit-uat command', () => {
     fs.mkdirSync(path.join(tmpDir, '.planning', 'phases', '01-foundation'), { recursive: true });
     fs.writeFileSync(path.join(tmpDir, '.planning', 'phases', '01-foundation', '.gitkeep'), '');
 
-    const result = runGsdTools('audit-uat --raw', tmpDir);
+    const result = runWsfTools('audit-uat --raw', tmpDir);
     assert.ok(result.success, `Command failed: ${result.error}`);
 
     const output = JSON.parse(result.output);
@@ -57,7 +57,7 @@ expected: Submitting shows loading state
 result: pending
 `);
 
-    const result = runGsdTools('audit-uat --raw', tmpDir);
+    const result = runWsfTools('audit-uat --raw', tmpDir);
     assert.ok(result.success, `Command failed: ${result.error}`);
 
     const output = JSON.parse(result.output);
@@ -88,7 +88,7 @@ blocked_by: server
 reason: Server not running locally
 `);
 
-    const result = runGsdTools('audit-uat --raw', tmpDir);
+    const result = runWsfTools('audit-uat --raw', tmpDir);
     assert.ok(result.success, `Command failed: ${result.error}`);
 
     const output = JSON.parse(result.output);
@@ -120,7 +120,7 @@ expected: Grid collapses to single column on mobile
 result: pending
 `);
 
-    const result = runGsdTools('audit-uat --raw', tmpDir);
+    const result = runWsfTools('audit-uat --raw', tmpDir);
     assert.ok(result.success, `Command failed: ${result.error}`);
 
     const output = JSON.parse(result.output);
@@ -149,7 +149,7 @@ All passed.
 3. Verify MFA enrollment on new device
 `);
 
-    const result = runGsdTools('audit-uat --raw', tmpDir);
+    const result = runWsfTools('audit-uat --raw', tmpDir);
     assert.ok(result.success, `Command failed: ${result.error}`);
 
     const output = JSON.parse(result.output);
@@ -201,7 +201,7 @@ result: skipped
 reason: device not available
 `);
 
-    const result = runGsdTools('audit-uat --raw', tmpDir);
+    const result = runWsfTools('audit-uat --raw', tmpDir);
     assert.ok(result.success, `Command failed: ${result.error}`);
 
     const output = JSON.parse(result.output);
@@ -253,7 +253,7 @@ expected: New behavior
 result: pending
 `);
 
-    const result = runGsdTools('audit-uat --raw', tmpDir);
+    const result = runWsfTools('audit-uat --raw', tmpDir);
     assert.ok(result.success, `Command failed: ${result.error}`);
 
     const output = JSON.parse(result.output);
@@ -294,7 +294,7 @@ expected: Processes refund
 result: pending
 `);
 
-    const result = runGsdTools('audit-uat --raw', tmpDir);
+    const result = runWsfTools('audit-uat --raw', tmpDir);
     assert.ok(result.success, `Command failed: ${result.error}`);
 
     const output = JSON.parse(result.output);
@@ -318,7 +318,7 @@ phase: 01-foundation
 All checks passed.
 `);
 
-    const result = runGsdTools('audit-uat --raw', tmpDir);
+    const result = runWsfTools('audit-uat --raw', tmpDir);
     assert.ok(result.success, `Command failed: ${result.error}`);
 
     const output = JSON.parse(result.output);
@@ -358,7 +358,7 @@ expected: |
 awaiting: user response
 `);
 
-    const result = runGsdTools(['uat', 'render-checkpoint', '--file', '.planning/phases/01-test-phase/01-UAT.md', '--raw'], tmpDir);
+    const result = runWsfTools(['uat', 'render-checkpoint', '--file', '.planning/phases/01-test-phase/01-UAT.md', '--raw'], tmpDir);
     assert.strictEqual(result.success, true, `render-checkpoint failed: ${result.error}`);
     assert.ok(result.output.includes('**Test 2: Submit form validation**'));
     assert.ok(result.output.includes('Empty submit keeps controls visible.'));
@@ -382,7 +382,7 @@ expected: |
 awaiting: user response
 `);
 
-    const result = runGsdTools(['uat', 'render-checkpoint', '--file', '.planning/phases/01-test-phase/01-UAT.md', '--raw'], tmpDir);
+    const result = runWsfTools(['uat', 'render-checkpoint', '--file', '.planning/phases/01-test-phase/01-UAT.md', '--raw'], tmpDir);
     assert.strictEqual(result.success, true, `render-checkpoint failed: ${result.error}`);
     assert.ok(!result.output.includes('user to=all:final code'));
     assert.ok(!result.output.includes('彩票平台'));
@@ -406,7 +406,7 @@ expected: |
 awaiting: user response
 `);
 
-    const result = runGsdTools(['uat', 'render-checkpoint', '--file', '.planning/phases/01-test-phase/01-UAT.md', '--raw'], tmpDir);
+    const result = runWsfTools(['uat', 'render-checkpoint', '--file', '.planning/phases/01-test-phase/01-UAT.md', '--raw'], tmpDir);
     assert.strictEqual(result.success, true, `render-checkpoint failed: ${result.error}`);
     assert.ok(result.output.includes('Timezone abbreviation shows CET.'),
       'Expected text before Z-containing word should be present');
@@ -429,7 +429,7 @@ expected: |
   It ends at the section boundary.
 `);
 
-    const result = runGsdTools(['uat', 'render-checkpoint', '--file', '.planning/phases/01-test-phase/01-UAT.md', '--raw'], tmpDir);
+    const result = runWsfTools(['uat', 'render-checkpoint', '--file', '.planning/phases/01-test-phase/01-UAT.md', '--raw'], tmpDir);
     assert.strictEqual(result.success, true, `render-checkpoint failed: ${result.error}`);
     assert.ok(result.output.includes('This block has no trailing YAML key.'));
     assert.ok(result.output.includes('It ends at the section boundary.'));
@@ -446,7 +446,7 @@ phase: 01-test-phase
 [testing complete]
 `);
 
-    const result = runGsdTools(['uat', 'render-checkpoint', '--file', '.planning/phases/01-test-phase/01-UAT.md'], tmpDir);
+    const result = runWsfTools(['uat', 'render-checkpoint', '--file', '.planning/phases/01-test-phase/01-UAT.md'], tmpDir);
     assert.strictEqual(result.success, false, 'Should fail when no current test exists');
     assert.ok(result.error.includes('already complete'));
   });

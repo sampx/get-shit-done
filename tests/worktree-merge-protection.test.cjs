@@ -15,8 +15,8 @@ const assert = require('node:assert/strict');
 const fs = require('fs');
 const path = require('path');
 
-const EXECUTE_PHASE_PATH = path.join(__dirname, '..', 'get-shit-done', 'workflows', 'execute-phase.md');
-const QUICK_PATH = path.join(__dirname, '..', 'get-shit-done', 'workflows', 'quick.md');
+const EXECUTE_PHASE_PATH = path.join(__dirname, '..', 'wsf', 'workflows', 'execute-phase.md');
+const QUICK_PATH = path.join(__dirname, '..', 'wsf', 'workflows', 'quick.md');
 
 describe('worktree merge: orchestrator file protection (#1756)', () => {
   test('execute-phase.md backs up STATE.md before worktree merge', () => {

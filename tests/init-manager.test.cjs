@@ -1,12 +1,12 @@
 /**
- * GSD Tools Tests - Init Manager
+ * WSF Tools Tests - Init Manager
  */
 
 const { test, describe, beforeEach, afterEach } = require('node:test');
 const assert = require('node:assert/strict');
 const fs = require('fs');
 const path = require('path');
-const { runGsdTools, createTempProject, cleanup } = require('./helpers.cjs');
+const { runWsfTools, createTempProject, cleanup } = require('./helpers.cjs');
 
 // Helper: write a minimal ROADMAP.md with phases
 function writeRoadmap(tmpDir, phases) {
@@ -68,14 +68,14 @@ describe('init manager', () => {
 
   test('fails without ROADMAP.md', () => {
     writeState(tmpDir);
-    const result = runGsdTools('init manager', tmpDir);
+    const result = runWsfTools('init manager', tmpDir);
     assert.ok(!result.success);
     assert.ok(result.error.includes('ROADMAP.md'));
   });
 
   test('fails without STATE.md', () => {
     writeRoadmap(tmpDir, [{ number: '1', name: 'Setup' }]);
-    const result = runGsdTools('init manager', tmpDir);
+    const result = runWsfTools('init manager', tmpDir);
     assert.ok(!result.success);
     assert.ok(result.error.includes('STATE.md'));
   });
@@ -88,7 +88,7 @@ describe('init manager', () => {
       { number: '3', name: 'UI' },
     ]);
 
-    const result = runGsdTools('init manager', tmpDir);
+    const result = runWsfTools('init manager', tmpDir);
     assert.ok(result.success, `Command failed: ${result.error}`);
 
     const output = JSON.parse(result.output);
@@ -120,7 +120,7 @@ describe('init manager', () => {
     scaffoldPhase(tmpDir, 4, { slug: 'empty-phase' });
     // Phase 5: no directory at all
 
-    const result = runGsdTools('init manager', tmpDir);
+    const result = runWsfTools('init manager', tmpDir);
     assert.ok(result.success, `Command failed: ${result.error}`);
 
     const output = JSON.parse(result.output);
@@ -139,7 +139,7 @@ describe('init manager', () => {
     ]);
     scaffoldPhase(tmpDir, 1, { slug: 'foundation', plans: 1, summaries: 1 });
 
-    const result = runGsdTools('init manager', tmpDir);
+    const result = runWsfTools('init manager', tmpDir);
     const output = JSON.parse(result.output);
 
     assert.strictEqual(output.phases[0].deps_satisfied, true);
@@ -153,7 +153,7 @@ describe('init manager', () => {
       { number: '2', name: 'Depends on 1', depends_on: 'Phase 1' },
     ]);
 
-    const result = runGsdTools('init manager', tmpDir);
+    const result = runWsfTools('init manager', tmpDir);
     const output = JSON.parse(result.output);
 
     assert.strictEqual(output.phases[0].deps_satisfied, true); // no deps
@@ -168,7 +168,7 @@ describe('init manager', () => {
       { number: '3', name: 'UI' },
     ]);
 
-    const result = runGsdTools('init manager', tmpDir);
+    const result = runWsfTools('init manager', tmpDir);
     const output = JSON.parse(result.output);
 
     // Only phase 1 should be discussable
@@ -193,7 +193,7 @@ describe('init manager', () => {
     // Phase 1 discussed
     scaffoldPhase(tmpDir, 1, { slug: 'foundation', context: true });
 
-    const result = runGsdTools('init manager', tmpDir);
+    const result = runWsfTools('init manager', tmpDir);
     const output = JSON.parse(result.output);
 
     // Phase 1 is discussed, phase 2 is next to discuss
@@ -222,7 +222,7 @@ describe('init manager', () => {
     scaffoldPhase(tmpDir, 2, { slug: 'api-layer', context: true, plans: 2 }); // planned
     scaffoldPhase(tmpDir, 3, { slug: 'auth', context: true }); // discussed
 
-    const result = runGsdTools('init manager', tmpDir);
+    const result = runWsfTools('init manager', tmpDir);
     const output = JSON.parse(result.output);
 
     // Phase 4 is first undiscussed
@@ -251,7 +251,7 @@ describe('init manager', () => {
     scaffoldPhase(tmpDir, 2, { slug: 'ready-to-execute', context: true, plans: 2 });
     scaffoldPhase(tmpDir, 3, { slug: 'ready-to-plan', context: true });
 
-    const result = runGsdTools('init manager', tmpDir);
+    const result = runWsfTools('init manager', tmpDir);
     const output = JSON.parse(result.output);
 
     assert.ok(output.recommended_actions.length >= 3);
@@ -270,7 +270,7 @@ describe('init manager', () => {
       { number: '2', name: 'Blocked', depends_on: 'Phase 1' },
     ]);
 
-    const result = runGsdTools('init manager', tmpDir);
+    const result = runWsfTools('init manager', tmpDir);
     const output = JSON.parse(result.output);
 
     // Phase 2 should not appear in recommendations (blocked by phase 1)
@@ -287,7 +287,7 @@ describe('init manager', () => {
     scaffoldPhase(tmpDir, 1, { slug: 'done', plans: 1, summaries: 1 });
     scaffoldPhase(tmpDir, 2, { slug: 'also-done', plans: 1, summaries: 1 });
 
-    const result = runGsdTools('init manager', tmpDir);
+    const result = runWsfTools('init manager', tmpDir);
     const output = JSON.parse(result.output);
 
     assert.strictEqual(output.all_complete, true);
@@ -304,7 +304,7 @@ describe('init manager', () => {
       JSON.stringify(waiting)
     );
 
-    const result = runGsdTools('init manager', tmpDir);
+    const result = runWsfTools('init manager', tmpDir);
     const output = JSON.parse(result.output);
 
     assert.deepStrictEqual(output.waiting_signal, waiting);
@@ -317,7 +317,7 @@ describe('init manager', () => {
       { number: '2', name: 'API', goal: 'Build endpoints', depends_on: 'Phase 1' },
     ]);
 
-    const result = runGsdTools('init manager', tmpDir);
+    const result = runWsfTools('init manager', tmpDir);
     const output = JSON.parse(result.output);
 
     assert.strictEqual(output.phases[0].goal, 'Set up the base');
@@ -334,7 +334,7 @@ describe('init manager', () => {
       { number: '3', name: 'This Name Is Way Too Long For The Table' },
     ]);
 
-    const result = runGsdTools('init manager', tmpDir);
+    const result = runWsfTools('init manager', tmpDir);
     const output = JSON.parse(result.output);
 
     assert.strictEqual(output.phases[0].display_name, 'Short');
@@ -352,7 +352,7 @@ describe('init manager', () => {
     // Scaffold with a file — it will have current mtime (within 5 min)
     scaffoldPhase(tmpDir, 1, { slug: 'active-phase', context: true });
 
-    const result = runGsdTools('init manager', tmpDir);
+    const result = runWsfTools('init manager', tmpDir);
     const output = JSON.parse(result.output);
 
     assert.strictEqual(output.phases[0].is_active, true);
@@ -372,7 +372,7 @@ describe('init manager', () => {
     // Phase 3: planned and deps would be met if Phase 2 were complete, but it's not
     scaffoldPhase(tmpDir, 3, { slug: 'auth', context: true, plans: 1 });
 
-    const result = runGsdTools('init manager', tmpDir);
+    const result = runWsfTools('init manager', tmpDir);
     const output = JSON.parse(result.output);
 
     // Phase 2 is partial — should NOT appear as execute recommendation (already running)
@@ -394,7 +394,7 @@ describe('init manager', () => {
     // Phase 3: planned, no deps — independent of Phase 2
     scaffoldPhase(tmpDir, 3, { slug: 'notifications', context: true, plans: 1 });
 
-    const result = runGsdTools('init manager', tmpDir);
+    const result = runWsfTools('init manager', tmpDir);
     const output = JSON.parse(result.output);
 
     // Phase 3 is independent of Phase 2 — should be recommended for execution
@@ -407,7 +407,7 @@ describe('init manager', () => {
     writeState(tmpDir);
     writeRoadmap(tmpDir, [{ number: '1', name: 'Test' }]);
 
-    const result = runGsdTools('init manager', tmpDir);
+    const result = runWsfTools('init manager', tmpDir);
     const output = JSON.parse(result.output);
 
     // macOS resolves /var → /private/var; normalize both sides
@@ -418,7 +418,7 @@ describe('init manager', () => {
     writeState(tmpDir);
     writeRoadmap(tmpDir, [{ number: '1', name: 'Test' }]);
 
-    const result = runGsdTools('init manager', tmpDir);
+    const result = runWsfTools('init manager', tmpDir);
     const output = JSON.parse(result.output);
 
     assert.ok(output.manager_flags, 'should include manager_flags');
@@ -445,7 +445,7 @@ describe('init manager', () => {
       })
     );
 
-    const result = runGsdTools('init manager', tmpDir);
+    const result = runWsfTools('init manager', tmpDir);
     const output = JSON.parse(result.output);
 
     assert.ok(output.manager_flags, 'should include manager_flags');
@@ -471,7 +471,7 @@ describe('init manager', () => {
       })
     );
 
-    const result = runGsdTools('init manager', tmpDir);
+    const result = runWsfTools('init manager', tmpDir);
     const output = JSON.parse(result.output);
 
     // Invalid flags should be sanitized to empty string
@@ -494,7 +494,7 @@ describe('init manager', () => {
     fs.mkdirSync(backlogDir, { recursive: true });
     fs.writeFileSync(path.join(backlogDir, '999.1-01-PLAN.md'), '# Backlog Plan');
 
-    const result = runGsdTools('init manager', tmpDir);
+    const result = runWsfTools('init manager', tmpDir);
     assert.ok(result.success, `Command failed: ${result.error}`);
 
     const output = JSON.parse(result.output);
@@ -516,7 +516,7 @@ describe('init manager', () => {
       JSON.stringify({ response_language: 'Japanese' })
     );
 
-    const result = runGsdTools('init manager', tmpDir);
+    const result = runWsfTools('init manager', tmpDir);
     const output = JSON.parse(result.output);
 
     assert.strictEqual(output.response_language, 'Japanese');
@@ -526,7 +526,7 @@ describe('init manager', () => {
     writeState(tmpDir);
     writeRoadmap(tmpDir, [{ number: '1', name: 'Test' }]);
 
-    const result = runGsdTools('init manager', tmpDir);
+    const result = runWsfTools('init manager', tmpDir);
     const output = JSON.parse(result.output);
 
     assert.strictEqual(output.response_language, undefined);

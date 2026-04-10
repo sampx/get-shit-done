@@ -7,11 +7,11 @@
 
 import { query } from '@anthropic-ai/claude-agent-sdk';
 import type { SDKMessage, SDKResultMessage, SDKResultSuccess, SDKResultError } from '@anthropic-ai/claude-agent-sdk';
-import type { ParsedPlan, PlanResult, SessionOptions, SessionUsage, GSDCostUpdateEvent, PhaseStepType } from './types.js';
-import { GSDEventType, PhaseType } from './types.js';
-import type { GSDConfig } from './config.js';
+import type { ParsedPlan, PlanResult, SessionOptions, SessionUsage, WSFCostUpdateEvent, PhaseStepType } from './types.js';
+import { WSFEventType, PhaseType } from './types.js';
+import type { WSFConfig } from './config.js';
 import { buildExecutorPrompt, parseAgentTools, DEFAULT_ALLOWED_TOOLS } from './prompt-builder.js';
-import type { GSDEventStream, EventStreamContext } from './event-stream.js';
+import type { WSFEventStream, EventStreamContext } from './event-stream.js';
 import { getToolsForPhase } from './tool-scoping.js';
 
 // ─── Model resolution ────────────────────────────────────────────────────────
@@ -21,7 +21,7 @@ import { getToolsForPhase } from './tool-scoping.js';
  *
  * Priority: explicit model option > config model_profile > default.
  */
-function resolveModel(options?: SessionOptions, config?: GSDConfig): string | undefined {
+function resolveModel(options?: SessionOptions, config?: WSFConfig): string | undefined {
   if (options?.model) return options.model;
 
   // Map model_profile names to model IDs
@@ -47,17 +47,17 @@ function resolveModel(options?: SessionOptions, config?: GSDConfig): string | un
  * the message stream to extract the result.
  *
  * @param plan - Parsed plan structure
- * @param config - GSD project configuration
+ * @param config - WSF project configuration
  * @param options - Session overrides (maxTurns, budget, model, etc.)
  * @param agentDef - Raw agent definition content (optional, for tool/role extraction)
  * @returns Typed PlanResult with cost, duration, success/error status
  */
 export async function runPlanSession(
   plan: ParsedPlan,
-  config: GSDConfig,
+  config: WSFConfig,
   options?: SessionOptions,
   agentDef?: string,
-  eventStream?: GSDEventStream,
+  eventStream?: WSFEventStream,
   streamContext?: EventStreamContext,
 ): Promise<PlanResult> {
   // Build the executor prompt
@@ -166,7 +166,7 @@ function extractResult(msg: SDKResultMessage): PlanResult {
  */
 async function processQueryStream(
   queryStream: AsyncIterable<SDKMessage>,
-  eventStream?: GSDEventStream,
+  eventStream?: WSFEventStream,
   streamContext?: EventStreamContext,
 ): Promise<PlanResult> {
   let resultMessage: SDKResultMessage | undefined;
@@ -215,14 +215,14 @@ async function processQueryStream(
   if (eventStream) {
     const cost = eventStream.getCost();
     eventStream.emitEvent({
-      type: GSDEventType.CostUpdate,
+      type: WSFEventType.CostUpdate,
       timestamp: new Date().toISOString(),
       sessionId: resultMessage.session_id,
       phase: streamContext?.phase,
       planName: streamContext?.planName,
       sessionCostUsd: result.totalCostUsd,
       cumulativeCostUsd: cost.cumulative,
-    } as GSDCostUpdateEvent);
+    } as WSFCostUpdateEvent);
   }
 
   return result;
@@ -255,7 +255,7 @@ function stepTypeToPhaseType(step: PhaseStepType): PhaseType {
  *
  * @param prompt - Raw prompt string to append to the system prompt
  * @param phaseStep - Phase step type (determines tool scoping)
- * @param config - GSD project configuration
+ * @param config - WSF project configuration
  * @param options - Session overrides (maxTurns, budget, model, etc.)
  * @param eventStream - Optional event stream for observability
  * @param streamContext - Optional context for event tagging
@@ -264,9 +264,9 @@ function stepTypeToPhaseType(step: PhaseStepType): PhaseType {
 export async function runPhaseStepSession(
   prompt: string,
   phaseStep: PhaseStepType,
-  config: GSDConfig,
+  config: WSFConfig,
   options?: SessionOptions,
-  eventStream?: GSDEventStream,
+  eventStream?: WSFEventStream,
   streamContext?: EventStreamContext,
 ): Promise<PlanResult> {
   const phaseType = stepTypeToPhaseType(phaseStep);

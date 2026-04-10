@@ -6,7 +6,7 @@
  * because the install loop did not handle non-.js files from hooks/dist/.
  *
  * This test runs the actual installer (not a simulation) and verifies that
- * gsd-session-state.sh, gsd-validate-commit.sh, and gsd-phase-boundary.sh
+ * wsf-session-state.sh, wsf-validate-commit.sh, and wsf-phase-boundary.sh
  * are present and executable in the target hooks directory.
  *
  * Distinct from:
@@ -28,9 +28,9 @@ const BUILD_SCRIPT = path.join(__dirname, '..', 'scripts', 'build-hooks.js');
 const isWindows = process.platform === 'win32';
 
 const SH_HOOKS = [
-  'gsd-session-state.sh',
-  'gsd-validate-commit.sh',
-  'gsd-phase-boundary.sh',
+  'wsf-session-state.sh',
+  'wsf-validate-commit.sh',
+  'wsf-phase-boundary.sh',
 ];
 
 // ─── Ensure hooks/dist/ is populated before any install test ────────────────
@@ -77,37 +77,37 @@ describe('#1834: installer deploys .sh hooks alongside .js hooks', () => {
   let tmpDir;
 
   beforeEach(() => {
-    tmpDir = createTempDir('gsd-install-1834-');
+    tmpDir = createTempDir('wsf-install-1834-');
   });
 
   afterEach(() => {
     cleanup(tmpDir);
   });
 
-  test('gsd-session-state.sh is present after install', () => {
+  test('wsf-session-state.sh is present after install', () => {
     const hooksDir = runInstaller(tmpDir);
-    const target = path.join(hooksDir, 'gsd-session-state.sh');
+    const target = path.join(hooksDir, 'wsf-session-state.sh');
     assert.ok(
       fs.existsSync(target),
-      'gsd-session-state.sh must be installed to hooks/ — missing file causes SessionStart hook errors'
+      'wsf-session-state.sh must be installed to hooks/ — missing file causes SessionStart hook errors'
     );
   });
 
-  test('gsd-validate-commit.sh is present after install', () => {
+  test('wsf-validate-commit.sh is present after install', () => {
     const hooksDir = runInstaller(tmpDir);
-    const target = path.join(hooksDir, 'gsd-validate-commit.sh');
+    const target = path.join(hooksDir, 'wsf-validate-commit.sh');
     assert.ok(
       fs.existsSync(target),
-      'gsd-validate-commit.sh must be installed to hooks/ — missing file causes PreToolUse hook errors'
+      'wsf-validate-commit.sh must be installed to hooks/ — missing file causes PreToolUse hook errors'
     );
   });
 
-  test('gsd-phase-boundary.sh is present after install', () => {
+  test('wsf-phase-boundary.sh is present after install', () => {
     const hooksDir = runInstaller(tmpDir);
-    const target = path.join(hooksDir, 'gsd-phase-boundary.sh');
+    const target = path.join(hooksDir, 'wsf-phase-boundary.sh');
     assert.ok(
       fs.existsSync(target),
-      'gsd-phase-boundary.sh must be installed to hooks/ — missing file causes PostToolUse hook errors'
+      'wsf-phase-boundary.sh must be installed to hooks/ — missing file causes PostToolUse hook errors'
     );
   });
 

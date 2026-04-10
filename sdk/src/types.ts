@@ -1,8 +1,8 @@
 /**
- * Core type definitions for GSD-1 PLAN.md structures.
+ * Core type definitions for WSF-1 PLAN.md structures.
  *
  * These types model the YAML frontmatter + XML task bodies
- * that make up a GSD plan file.
+ * that make up a WSF plan file.
  */
 
 // ─── Frontmatter types ───────────────────────────────────────────────────────
@@ -88,15 +88,15 @@ export interface ParsedPlan {
 // ─── Init command types ──────────────────────────────────────────────────────
 
 /**
- * JSON output from `gsd-tools.cjs init new-project`.
+ * JSON output from `wsf-tools.cjs init new-project`.
  * Describes project state and model configuration for the init workflow.
  */
 export interface InitNewProjectInfo {
-  /** Model resolved for the gsd-project-researcher agent. */
+  /** Model resolved for the wsf-project-researcher agent. */
   researcher_model: string;
-  /** Model resolved for the gsd-research-synthesizer agent. */
+  /** Model resolved for the wsf-research-synthesizer agent. */
   synthesizer_model: string;
-  /** Model resolved for the gsd-roadmapper agent. */
+  /** Model resolved for the wsf-roadmapper agent. */
   roadmapper_model: string;
 
   /** Whether docs should be committed after generation. */
@@ -134,7 +134,7 @@ export interface InitNewProjectInfo {
   /** Absolute project root path (injected by withProjectRoot). */
   project_root?: string;
 
-  /** Allow additional fields from gsd-tools evolution. */
+  /** Allow additional fields from wsf-tools evolution. */
   [key: string]: unknown;
 }
 
@@ -192,13 +192,13 @@ export interface PlanResult {
 }
 
 /**
- * Options for creating a GSD instance.
+ * Options for creating a WSF instance.
  */
-export interface GSDOptions {
+export interface WSFOptions {
   /** Root directory of the project. */
   projectDir: string;
-  /** Path to gsd-tools.cjs. Falls back to <projectDir>/.claude/, then the bundled repo path, then ~/.claude/. */
-  gsdToolsPath?: string;
+  /** Path to wsf-tools.cjs. Falls back to <projectDir>/.claude/, then the bundled repo path, then ~/.claude/. */
+  wsfToolsPath?: string;
   /** Model to use for execution sessions. */
   model?: string;
   /** Maximum budget per plan execution in USD. Default: 5.0. */
@@ -212,7 +212,7 @@ export interface GSDOptions {
 // ─── S02: Event stream types ─────────────────────────────────────────────────
 
 /**
- * Phase types for GSD execution workflow.
+ * Phase types for WSF execution workflow.
  */
 export enum PhaseType {
   Discuss = 'discuss',
@@ -223,10 +223,10 @@ export enum PhaseType {
 }
 
 /**
- * Event types emitted by the GSD event stream.
+ * Event types emitted by the WSF event stream.
  * Maps from SDKMessage variants to domain-meaningful events.
  */
-export enum GSDEventType {
+export enum WSFEventType {
   SessionInit = 'session_init',
   SessionComplete = 'session_complete',
   SessionError = 'session_error',
@@ -259,10 +259,10 @@ export enum GSDEventType {
 }
 
 /**
- * Base fields present on every GSD event.
+ * Base fields present on every WSF event.
  */
-export interface GSDEventBase {
-  type: GSDEventType;
+export interface WSFEventBase {
+  type: WSFEventType;
   timestamp: string;
   sessionId: string;
   phase?: PhaseType;
@@ -272,8 +272,8 @@ export interface GSDEventBase {
 /**
  * Session initialized — emitted on SDKSystemMessage subtype 'init'.
  */
-export interface GSDSessionInitEvent extends GSDEventBase {
-  type: GSDEventType.SessionInit;
+export interface WSFSessionInitEvent extends WSFEventBase {
+  type: WSFEventType.SessionInit;
   model: string;
   tools: string[];
   cwd: string;
@@ -282,8 +282,8 @@ export interface GSDSessionInitEvent extends GSDEventBase {
 /**
  * Session completed successfully — emitted on SDKResultSuccess.
  */
-export interface GSDSessionCompleteEvent extends GSDEventBase {
-  type: GSDEventType.SessionComplete;
+export interface WSFSessionCompleteEvent extends WSFEventBase {
+  type: WSFEventType.SessionComplete;
   success: true;
   totalCostUsd: number;
   durationMs: number;
@@ -294,8 +294,8 @@ export interface GSDSessionCompleteEvent extends GSDEventBase {
 /**
  * Session ended with an error — emitted on SDKResultError.
  */
-export interface GSDSessionErrorEvent extends GSDEventBase {
-  type: GSDEventType.SessionError;
+export interface WSFSessionErrorEvent extends WSFEventBase {
+  type: WSFEventType.SessionError;
   success: false;
   totalCostUsd: number;
   durationMs: number;
@@ -307,16 +307,16 @@ export interface GSDSessionErrorEvent extends GSDEventBase {
 /**
  * Assistant produced text output.
  */
-export interface GSDAssistantTextEvent extends GSDEventBase {
-  type: GSDEventType.AssistantText;
+export interface WSFAssistantTextEvent extends WSFEventBase {
+  type: WSFEventType.AssistantText;
   text: string;
 }
 
 /**
  * Tool invocation detected in assistant response.
  */
-export interface GSDToolCallEvent extends GSDEventBase {
-  type: GSDEventType.ToolCall;
+export interface WSFToolCallEvent extends WSFEventBase {
+  type: WSFEventType.ToolCall;
   toolName: string;
   toolUseId: string;
   input: Record<string, unknown>;
@@ -325,8 +325,8 @@ export interface GSDToolCallEvent extends GSDEventBase {
 /**
  * Tool execution progress update.
  */
-export interface GSDToolProgressEvent extends GSDEventBase {
-  type: GSDEventType.ToolProgress;
+export interface WSFToolProgressEvent extends WSFEventBase {
+  type: WSFEventType.ToolProgress;
   toolName: string;
   toolUseId: string;
   elapsedSeconds: number;
@@ -335,8 +335,8 @@ export interface GSDToolProgressEvent extends GSDEventBase {
 /**
  * Tool use summary after completion.
  */
-export interface GSDToolUseSummaryEvent extends GSDEventBase {
-  type: GSDEventType.ToolUseSummary;
+export interface WSFToolUseSummaryEvent extends WSFEventBase {
+  type: WSFEventType.ToolUseSummary;
   summary: string;
   toolUseIds: string[];
 }
@@ -344,8 +344,8 @@ export interface GSDToolUseSummaryEvent extends GSDEventBase {
 /**
  * Subagent task started.
  */
-export interface GSDTaskStartedEvent extends GSDEventBase {
-  type: GSDEventType.TaskStarted;
+export interface WSFTaskStartedEvent extends WSFEventBase {
+  type: WSFEventType.TaskStarted;
   taskId: string;
   description: string;
   taskType?: string;
@@ -354,8 +354,8 @@ export interface GSDTaskStartedEvent extends GSDEventBase {
 /**
  * Subagent task progress.
  */
-export interface GSDTaskProgressEvent extends GSDEventBase {
-  type: GSDEventType.TaskProgress;
+export interface WSFTaskProgressEvent extends WSFEventBase {
+  type: WSFEventType.TaskProgress;
   taskId: string;
   description: string;
   totalTokens: number;
@@ -367,8 +367,8 @@ export interface GSDTaskProgressEvent extends GSDEventBase {
 /**
  * Subagent task completed/failed/stopped.
  */
-export interface GSDTaskNotificationEvent extends GSDEventBase {
-  type: GSDEventType.TaskNotification;
+export interface WSFTaskNotificationEvent extends WSFEventBase {
+  type: WSFEventType.TaskNotification;
   taskId: string;
   status: 'completed' | 'failed' | 'stopped';
   summary: string;
@@ -377,8 +377,8 @@ export interface GSDTaskNotificationEvent extends GSDEventBase {
 /**
  * Cost updated (emitted on session_complete and periodically).
  */
-export interface GSDCostUpdateEvent extends GSDEventBase {
-  type: GSDEventType.CostUpdate;
+export interface WSFCostUpdateEvent extends WSFEventBase {
+  type: WSFEventType.CostUpdate;
   sessionCostUsd: number;
   cumulativeCostUsd: number;
 }
@@ -386,8 +386,8 @@ export interface GSDCostUpdateEvent extends GSDEventBase {
 /**
  * API retry in progress.
  */
-export interface GSDAPIRetryEvent extends GSDEventBase {
-  type: GSDEventType.APIRetry;
+export interface WSFAPIRetryEvent extends WSFEventBase {
+  type: WSFEventType.APIRetry;
   attempt: number;
   maxRetries: number;
   retryDelayMs: number;
@@ -397,8 +397,8 @@ export interface GSDAPIRetryEvent extends GSDEventBase {
 /**
  * Rate limit information updated.
  */
-export interface GSDRateLimitEvent extends GSDEventBase {
-  type: GSDEventType.RateLimit;
+export interface WSFRateLimitEvent extends WSFEventBase {
+  type: WSFEventType.RateLimit;
   status: string;
   resetsAt?: number;
   utilization?: number;
@@ -407,16 +407,16 @@ export interface GSDRateLimitEvent extends GSDEventBase {
 /**
  * System status change (e.g., compacting).
  */
-export interface GSDStatusChangeEvent extends GSDEventBase {
-  type: GSDEventType.StatusChange;
+export interface WSFStatusChangeEvent extends WSFEventBase {
+  type: WSFEventType.StatusChange;
   status: string | null;
 }
 
 /**
  * Compact boundary — context window was compacted.
  */
-export interface GSDCompactBoundaryEvent extends GSDEventBase {
-  type: GSDEventType.CompactBoundary;
+export interface WSFCompactBoundaryEvent extends WSFEventBase {
+  type: WSFEventType.CompactBoundary;
   trigger: 'manual' | 'auto';
   preTokens: number;
 }
@@ -424,16 +424,16 @@ export interface GSDCompactBoundaryEvent extends GSDEventBase {
 /**
  * Raw stream event from SDK (partial assistant messages).
  */
-export interface GSDStreamEvent extends GSDEventBase {
-  type: GSDEventType.StreamEvent;
+export interface WSFStreamEvent extends WSFEventBase {
+  type: WSFEventType.StreamEvent;
   event: unknown;
 }
 
 /**
  * Phase execution started.
  */
-export interface GSDPhaseStartEvent extends GSDEventBase {
-  type: GSDEventType.PhaseStart;
+export interface WSFPhaseStartEvent extends WSFEventBase {
+  type: WSFEventType.PhaseStart;
   phaseNumber: string;
   phaseName: string;
 }
@@ -441,8 +441,8 @@ export interface GSDPhaseStartEvent extends GSDEventBase {
 /**
  * A single phase step (discuss, research, etc.) started.
  */
-export interface GSDPhaseStepStartEvent extends GSDEventBase {
-  type: GSDEventType.PhaseStepStart;
+export interface WSFPhaseStepStartEvent extends WSFEventBase {
+  type: WSFEventType.PhaseStepStart;
   phaseNumber: string;
   step: PhaseStepType;
 }
@@ -450,8 +450,8 @@ export interface GSDPhaseStepStartEvent extends GSDEventBase {
 /**
  * A single phase step completed.
  */
-export interface GSDPhaseStepCompleteEvent extends GSDEventBase {
-  type: GSDEventType.PhaseStepComplete;
+export interface WSFPhaseStepCompleteEvent extends WSFEventBase {
+  type: WSFEventType.PhaseStepComplete;
   phaseNumber: string;
   step: PhaseStepType;
   success: boolean;
@@ -462,8 +462,8 @@ export interface GSDPhaseStepCompleteEvent extends GSDEventBase {
 /**
  * Full phase execution completed.
  */
-export interface GSDPhaseCompleteEvent extends GSDEventBase {
-  type: GSDEventType.PhaseComplete;
+export interface WSFPhaseCompleteEvent extends WSFEventBase {
+  type: WSFEventType.PhaseComplete;
   phaseNumber: string;
   phaseName: string;
   success: boolean;
@@ -501,8 +501,8 @@ export interface PhasePlanIndex {
 /**
  * Wave execution started — emitted before concurrent plans launch.
  */
-export interface GSDWaveStartEvent extends GSDEventBase {
-  type: GSDEventType.WaveStart;
+export interface WSFWaveStartEvent extends WSFEventBase {
+  type: WSFEventType.WaveStart;
   phaseNumber: string;
   waveNumber: number;
   planCount: number;
@@ -512,8 +512,8 @@ export interface GSDWaveStartEvent extends GSDEventBase {
 /**
  * Wave execution completed — emitted after all plans in a wave settle.
  */
-export interface GSDWaveCompleteEvent extends GSDEventBase {
-  type: GSDEventType.WaveComplete;
+export interface WSFWaveCompleteEvent extends WSFEventBase {
+  type: WSFEventType.WaveComplete;
   phaseNumber: string;
   waveNumber: number;
   successCount: number;
@@ -524,7 +524,7 @@ export interface GSDWaveCompleteEvent extends GSDEventBase {
 // ─── S05: Milestone-level types ──────────────────────────────────────────────
 
 /**
- * Single phase entry from `gsd-tools.cjs roadmap analyze`.
+ * Single phase entry from `wsf-tools.cjs roadmap analyze`.
  */
 export interface RoadmapPhaseInfo {
   number: string;
@@ -534,7 +534,7 @@ export interface RoadmapPhaseInfo {
 }
 
 /**
- * Structured output from `gsd-tools.cjs roadmap analyze`.
+ * Structured output from `wsf-tools.cjs roadmap analyze`.
  */
 export interface RoadmapAnalysis {
   phases: RoadmapPhaseInfo[];
@@ -563,8 +563,8 @@ export interface MilestoneRunnerResult {
 /**
  * Milestone execution started.
  */
-export interface GSDMilestoneStartEvent extends GSDEventBase {
-  type: GSDEventType.MilestoneStart;
+export interface WSFMilestoneStartEvent extends WSFEventBase {
+  type: WSFEventType.MilestoneStart;
   phaseCount: number;
   prompt: string;
 }
@@ -572,8 +572,8 @@ export interface GSDMilestoneStartEvent extends GSDEventBase {
 /**
  * Milestone execution completed.
  */
-export interface GSDMilestoneCompleteEvent extends GSDEventBase {
-  type: GSDEventType.MilestoneComplete;
+export interface WSFMilestoneCompleteEvent extends WSFEventBase {
+  type: WSFEventType.MilestoneComplete;
   success: boolean;
   totalCostUsd: number;
   totalDurationMs: number;
@@ -601,7 +601,7 @@ export type InitStepName =
  * Configuration overrides for InitRunner.
  */
 export interface InitConfig {
-  /** Model for research sessions (overrides gsd-tools detected model). */
+  /** Model for research sessions (overrides wsf-tools detected model). */
   researchModel?: string;
   /** Model for synthesis/roadmap sessions. */
   orchestratorModel?: string;
@@ -637,8 +637,8 @@ export interface InitResult {
 /**
  * Init workflow started.
  */
-export interface GSDInitStartEvent extends GSDEventBase {
-  type: GSDEventType.InitStart;
+export interface WSFInitStartEvent extends WSFEventBase {
+  type: WSFEventType.InitStart;
   input: string;
   projectDir: string;
 }
@@ -646,16 +646,16 @@ export interface GSDInitStartEvent extends GSDEventBase {
 /**
  * Init workflow step started.
  */
-export interface GSDInitStepStartEvent extends GSDEventBase {
-  type: GSDEventType.InitStepStart;
+export interface WSFInitStepStartEvent extends WSFEventBase {
+  type: WSFEventType.InitStepStart;
   step: InitStepName;
 }
 
 /**
  * Init workflow step completed.
  */
-export interface GSDInitStepCompleteEvent extends GSDEventBase {
-  type: GSDEventType.InitStepComplete;
+export interface WSFInitStepCompleteEvent extends WSFEventBase {
+  type: WSFEventType.InitStepComplete;
   step: InitStepName;
   success: boolean;
   durationMs: number;
@@ -666,8 +666,8 @@ export interface GSDInitStepCompleteEvent extends GSDEventBase {
 /**
  * Init workflow completed.
  */
-export interface GSDInitCompleteEvent extends GSDEventBase {
-  type: GSDEventType.InitComplete;
+export interface WSFInitCompleteEvent extends WSFEventBase {
+  type: WSFEventType.InitComplete;
   success: boolean;
   totalCostUsd: number;
   totalDurationMs: number;
@@ -677,53 +677,53 @@ export interface GSDInitCompleteEvent extends GSDEventBase {
 /**
  * Research sessions spawned in parallel during init.
  */
-export interface GSDInitResearchSpawnEvent extends GSDEventBase {
-  type: GSDEventType.InitResearchSpawn;
+export interface WSFInitResearchSpawnEvent extends WSFEventBase {
+  type: WSFEventType.InitResearchSpawn;
   sessionCount: number;
   researchTypes: string[];
 }
 
 /**
- * Discriminated union of all GSD events.
+ * Discriminated union of all WSF events.
  */
-export type GSDEvent =
-  | GSDSessionInitEvent
-  | GSDSessionCompleteEvent
-  | GSDSessionErrorEvent
-  | GSDAssistantTextEvent
-  | GSDToolCallEvent
-  | GSDToolProgressEvent
-  | GSDToolUseSummaryEvent
-  | GSDTaskStartedEvent
-  | GSDTaskProgressEvent
-  | GSDTaskNotificationEvent
-  | GSDCostUpdateEvent
-  | GSDAPIRetryEvent
-  | GSDRateLimitEvent
-  | GSDStatusChangeEvent
-  | GSDCompactBoundaryEvent
-  | GSDStreamEvent
-  | GSDPhaseStartEvent
-  | GSDPhaseStepStartEvent
-  | GSDPhaseStepCompleteEvent
-  | GSDPhaseCompleteEvent
-  | GSDWaveStartEvent
-  | GSDWaveCompleteEvent
-  | GSDMilestoneStartEvent
-  | GSDMilestoneCompleteEvent
-  | GSDInitStartEvent
-  | GSDInitStepStartEvent
-  | GSDInitStepCompleteEvent
-  | GSDInitCompleteEvent
-  | GSDInitResearchSpawnEvent;
+export type WSFEvent =
+  | WSFSessionInitEvent
+  | WSFSessionCompleteEvent
+  | WSFSessionErrorEvent
+  | WSFAssistantTextEvent
+  | WSFToolCallEvent
+  | WSFToolProgressEvent
+  | WSFToolUseSummaryEvent
+  | WSFTaskStartedEvent
+  | WSFTaskProgressEvent
+  | WSFTaskNotificationEvent
+  | WSFCostUpdateEvent
+  | WSFAPIRetryEvent
+  | WSFRateLimitEvent
+  | WSFStatusChangeEvent
+  | WSFCompactBoundaryEvent
+  | WSFStreamEvent
+  | WSFPhaseStartEvent
+  | WSFPhaseStepStartEvent
+  | WSFPhaseStepCompleteEvent
+  | WSFPhaseCompleteEvent
+  | WSFWaveStartEvent
+  | WSFWaveCompleteEvent
+  | WSFMilestoneStartEvent
+  | WSFMilestoneCompleteEvent
+  | WSFInitStartEvent
+  | WSFInitStepStartEvent
+  | WSFInitStepCompleteEvent
+  | WSFInitCompleteEvent
+  | WSFInitResearchSpawnEvent;
 
 /**
- * Transport handler interface for consuming GSD events.
+ * Transport handler interface for consuming WSF events.
  * Transports receive all events and can write to files, WebSockets, etc.
  */
 export interface TransportHandler {
   /** Called for each event. Must not throw. */
-  onEvent(event: GSDEvent): void;
+  onEvent(event: WSFEvent): void;
   /** Called when the stream is closing. Clean up resources. */
   close(): void;
 }
@@ -781,7 +781,7 @@ export enum PhaseStepType {
 }
 
 /**
- * Structured output from `gsd-tools.cjs init phase-op <N>`.
+ * Structured output from `wsf-tools.cjs init phase-op <N>`.
  * Describes the current state of a phase on disk.
  */
 export interface PhaseOpInfo {

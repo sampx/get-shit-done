@@ -3,12 +3,12 @@ const assert = require('node:assert/strict');
 const fs = require('fs');
 const path = require('path');
 
-const GSD_ROOT = path.join(__dirname, '..', 'get-shit-done');
+const WSF_ROOT = path.join(__dirname, '..', 'wsf');
 
 describe('Thinking Partner Integration (#1726)', () => {
   // Reference doc tests
   describe('Reference document', () => {
-    const refPath = path.join(GSD_ROOT, 'references', 'thinking-partner.md');
+    const refPath = path.join(WSF_ROOT, 'references', 'thinking-partner.md');
 
     test('thinking-partner.md exists', () => {
       assert.ok(fs.existsSync(refPath), 'references/thinking-partner.md should exist');
@@ -68,7 +68,7 @@ describe('Thinking Partner Integration (#1726)', () => {
   describe('Config integration', () => {
     test('features.thinking_partner is in VALID_CONFIG_KEYS', () => {
       const configSrc = fs.readFileSync(
-        path.join(GSD_ROOT, 'bin', 'lib', 'config.cjs'),
+        path.join(WSF_ROOT, 'bin', 'lib', 'config.cjs'),
         'utf-8'
       );
       assert.ok(
@@ -79,7 +79,7 @@ describe('Thinking Partner Integration (#1726)', () => {
 
     test('features is in KNOWN_TOP_LEVEL section containers', () => {
       const coreSrc = fs.readFileSync(
-        path.join(GSD_ROOT, 'bin', 'lib', 'core.cjs'),
+        path.join(WSF_ROOT, 'bin', 'lib', 'core.cjs'),
         'utf-8'
       );
       // The KNOWN_TOP_LEVEL set should include 'features' in section containers
@@ -94,7 +94,7 @@ describe('Thinking Partner Integration (#1726)', () => {
   describe('Discuss-phase integration', () => {
     test('discuss-phase.md contains thinking partner conditional block', () => {
       const content = fs.readFileSync(
-        path.join(GSD_ROOT, 'workflows', 'discuss-phase.md'),
+        path.join(WSF_ROOT, 'workflows', 'discuss-phase.md'),
         'utf-8'
       );
       assert.ok(
@@ -105,7 +105,7 @@ describe('Thinking Partner Integration (#1726)', () => {
 
     test('discuss-phase references features.thinking_partner config', () => {
       const content = fs.readFileSync(
-        path.join(GSD_ROOT, 'workflows', 'discuss-phase.md'),
+        path.join(WSF_ROOT, 'workflows', 'discuss-phase.md'),
         'utf-8'
       );
       assert.ok(
@@ -116,7 +116,7 @@ describe('Thinking Partner Integration (#1726)', () => {
 
     test('discuss-phase references thinking-partner.md for signal list', () => {
       const content = fs.readFileSync(
-        path.join(GSD_ROOT, 'workflows', 'discuss-phase.md'),
+        path.join(WSF_ROOT, 'workflows', 'discuss-phase.md'),
         'utf-8'
       );
       assert.ok(
@@ -127,7 +127,7 @@ describe('Thinking Partner Integration (#1726)', () => {
 
     test('discuss-phase offers skip option', () => {
       const content = fs.readFileSync(
-        path.join(GSD_ROOT, 'workflows', 'discuss-phase.md'),
+        path.join(WSF_ROOT, 'workflows', 'discuss-phase.md'),
         'utf-8'
       );
       assert.ok(
@@ -140,7 +140,7 @@ describe('Thinking Partner Integration (#1726)', () => {
   describe('Plan-phase integration', () => {
     test('plan-phase.md contains thinking partner conditional block', () => {
       const content = fs.readFileSync(
-        path.join(GSD_ROOT, 'workflows', 'plan-phase.md'),
+        path.join(WSF_ROOT, 'workflows', 'plan-phase.md'),
         'utf-8'
       );
       assert.ok(
@@ -151,7 +151,7 @@ describe('Thinking Partner Integration (#1726)', () => {
 
     test('plan-phase references features.thinking_partner config', () => {
       const content = fs.readFileSync(
-        path.join(GSD_ROOT, 'workflows', 'plan-phase.md'),
+        path.join(WSF_ROOT, 'workflows', 'plan-phase.md'),
         'utf-8'
       );
       assert.ok(
@@ -162,7 +162,7 @@ describe('Thinking Partner Integration (#1726)', () => {
 
     test('plan-phase scans for architectural tradeoff keywords', () => {
       const content = fs.readFileSync(
-        path.join(GSD_ROOT, 'workflows', 'plan-phase.md'),
+        path.join(WSF_ROOT, 'workflows', 'plan-phase.md'),
         'utf-8'
       );
       assert.ok(
@@ -181,7 +181,7 @@ describe('Thinking Partner Integration (#1726)', () => {
 
     test('plan-phase offers skip option', () => {
       const content = fs.readFileSync(
-        path.join(GSD_ROOT, 'workflows', 'plan-phase.md'),
+        path.join(WSF_ROOT, 'workflows', 'plan-phase.md'),
         'utf-8'
       );
       assert.ok(
@@ -192,7 +192,7 @@ describe('Thinking Partner Integration (#1726)', () => {
 
     test('plan-phase block is between step 11 and step 12', () => {
       const content = fs.readFileSync(
-        path.join(GSD_ROOT, 'workflows', 'plan-phase.md'),
+        path.join(WSF_ROOT, 'workflows', 'plan-phase.md'),
         'utf-8'
       );
       const step11Idx = content.indexOf('## 11. Handle Checker Return');

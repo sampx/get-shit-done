@@ -1,8 +1,8 @@
 /**
- * GSD Event Stream — maps SDKMessage variants to typed GSD events.
+ * WSF Event Stream — maps SDKMessage variants to typed WSF events.
  *
  * Extends EventEmitter to provide a typed event bus. Includes:
- * - SDKMessage → GSDEvent mapping
+ * - SDKMessage → WSFEvent mapping
  * - Transport management (subscribe/unsubscribe handlers)
  * - Per-session cost tracking with cumulative totals
  */
@@ -26,24 +26,24 @@ import type {
   SDKPartialAssistantMessage,
 } from '@anthropic-ai/claude-agent-sdk';
 import {
-  GSDEventType,
-  type GSDEvent,
-  type GSDSessionInitEvent,
-  type GSDSessionCompleteEvent,
-  type GSDSessionErrorEvent,
-  type GSDAssistantTextEvent,
-  type GSDToolCallEvent,
-  type GSDToolProgressEvent,
-  type GSDToolUseSummaryEvent,
-  type GSDTaskStartedEvent,
-  type GSDTaskProgressEvent,
-  type GSDTaskNotificationEvent,
-  type GSDCostUpdateEvent,
-  type GSDAPIRetryEvent,
-  type GSDRateLimitEvent as GSDRateLimitEventType,
-  type GSDStatusChangeEvent,
-  type GSDCompactBoundaryEvent,
-  type GSDStreamEvent,
+  WSFEventType,
+  type WSFEvent,
+  type WSFSessionInitEvent,
+  type WSFSessionCompleteEvent,
+  type WSFSessionErrorEvent,
+  type WSFAssistantTextEvent,
+  type WSFToolCallEvent,
+  type WSFToolProgressEvent,
+  type WSFToolUseSummaryEvent,
+  type WSFTaskStartedEvent,
+  type WSFTaskProgressEvent,
+  type WSFTaskNotificationEvent,
+  type WSFCostUpdateEvent,
+  type WSFAPIRetryEvent,
+  type WSFRateLimitEvent as WSFRateLimitEventType,
+  type WSFStatusChangeEvent,
+  type WSFCompactBoundaryEvent,
+  type WSFStreamEvent,
   type TransportHandler,
   type CostBucket,
   type CostTracker,
@@ -57,9 +57,9 @@ export interface EventStreamContext {
   planName?: string;
 }
 
-// ─── GSDEventStream ──────────────────────────────────────────────────────────
+// ─── WSFEventStream ──────────────────────────────────────────────────────────
 
-export class GSDEventStream extends EventEmitter {
+export class WSFEventStream extends EventEmitter {
   private readonly transports: Set<TransportHandler> = new Set();
   private readonly costTracker: CostTracker = {
     sessions: new Map(),
@@ -97,8 +97,8 @@ export class GSDEventStream extends EventEmitter {
 
   // ─── Event emission ──────────────────────────────────────────────────
 
-  /** Emit a typed GSD event to all listeners and transports. */
-  emitEvent(event: GSDEvent): void {
+  /** Emit a typed WSF event to all listeners and transports. */
+  emitEvent(event: WSFEvent): void {
     // Emit via EventEmitter for listener-based consumers
     this.emit('event', event);
     this.emit(event.type, event);
@@ -117,10 +117,10 @@ export class GSDEventStream extends EventEmitter {
   // ─── SDKMessage mapping ──────────────────────────────────────────────
 
   /**
-   * Map an SDKMessage to a GSDEvent.
+   * Map an SDKMessage to a WSFEvent.
    * Returns null for non-actionable message types (user messages, replays, etc.).
    */
-  mapSDKMessage(msg: SDKMessage, context: EventStreamContext = {}): GSDEvent | null {
+  mapSDKMessage(msg: SDKMessage, context: EventStreamContext = {}): WSFEvent | null {
     const base = {
       timestamp: new Date().toISOString(),
       sessionId: 'session_id' in msg ? (msg.session_id as string) : '',
@@ -165,7 +165,7 @@ export class GSDEventStream extends EventEmitter {
    * Map an SDKMessage and emit the resulting event (if any).
    * Convenience method combining mapSDKMessage + emitEvent.
    */
-  mapAndEmit(msg: SDKMessage, context: EventStreamContext = {}): GSDEvent | null {
+  mapAndEmit(msg: SDKMessage, context: EventStreamContext = {}): WSFEvent | null {
     const event = this.mapSDKMessage(msg, context);
     if (event) {
       this.emitEvent(event);
@@ -204,8 +204,8 @@ export class GSDEventStream extends EventEmitter {
 
   private mapSystemMessage(
     msg: SDKSystemMessage | SDKAPIRetryMessage | SDKStatusMessage | SDKCompactBoundaryMessage | SDKTaskStartedMessage | SDKTaskProgressMessage | SDKTaskNotificationMessage,
-    base: Omit<GSDEvent, 'type'>,
-  ): GSDEvent | null {
+    base: Omit<WSFEvent, 'type'>,
+  ): WSFEvent | null {
     // All system messages have a subtype
     const subtype = (msg as { subtype: string }).subtype;
 
@@ -214,78 +214,78 @@ export class GSDEventStream extends EventEmitter {
         const initMsg = msg as SDKSystemMessage;
         return {
           ...base,
-          type: GSDEventType.SessionInit,
+          type: WSFEventType.SessionInit,
           model: initMsg.model,
           tools: initMsg.tools,
           cwd: initMsg.cwd,
-        } as GSDSessionInitEvent;
+        } as WSFSessionInitEvent;
       }
 
       case 'api_retry': {
         const retryMsg = msg as SDKAPIRetryMessage;
         return {
           ...base,
-          type: GSDEventType.APIRetry,
+          type: WSFEventType.APIRetry,
           attempt: retryMsg.attempt,
           maxRetries: retryMsg.max_retries,
           retryDelayMs: retryMsg.retry_delay_ms,
           errorStatus: retryMsg.error_status,
-        } as GSDAPIRetryEvent;
+        } as WSFAPIRetryEvent;
       }
 
       case 'status': {
         const statusMsg = msg as SDKStatusMessage;
         return {
           ...base,
-          type: GSDEventType.StatusChange,
+          type: WSFEventType.StatusChange,
           status: statusMsg.status,
-        } as GSDStatusChangeEvent;
+        } as WSFStatusChangeEvent;
       }
 
       case 'compact_boundary': {
         const compactMsg = msg as SDKCompactBoundaryMessage;
         return {
           ...base,
-          type: GSDEventType.CompactBoundary,
+          type: WSFEventType.CompactBoundary,
           trigger: compactMsg.compact_metadata.trigger,
           preTokens: compactMsg.compact_metadata.pre_tokens,
-        } as GSDCompactBoundaryEvent;
+        } as WSFCompactBoundaryEvent;
       }
 
       case 'task_started': {
         const taskMsg = msg as SDKTaskStartedMessage;
         return {
           ...base,
-          type: GSDEventType.TaskStarted,
+          type: WSFEventType.TaskStarted,
           taskId: taskMsg.task_id,
           description: taskMsg.description,
           taskType: taskMsg.task_type,
-        } as GSDTaskStartedEvent;
+        } as WSFTaskStartedEvent;
       }
 
       case 'task_progress': {
         const progressMsg = msg as SDKTaskProgressMessage;
         return {
           ...base,
-          type: GSDEventType.TaskProgress,
+          type: WSFEventType.TaskProgress,
           taskId: progressMsg.task_id,
           description: progressMsg.description,
           totalTokens: progressMsg.usage.total_tokens,
           toolUses: progressMsg.usage.tool_uses,
           durationMs: progressMsg.usage.duration_ms,
           lastToolName: progressMsg.last_tool_name,
-        } as GSDTaskProgressEvent;
+        } as WSFTaskProgressEvent;
       }
 
       case 'task_notification': {
         const notifMsg = msg as SDKTaskNotificationMessage;
         return {
           ...base,
-          type: GSDEventType.TaskNotification,
+          type: WSFEventType.TaskNotification,
           taskId: notifMsg.task_id,
           status: notifMsg.status,
           summary: notifMsg.summary,
-        } as GSDTaskNotificationEvent;
+        } as WSFTaskNotificationEvent;
       }
 
       // Non-actionable system subtypes
@@ -305,9 +305,9 @@ export class GSDEventStream extends EventEmitter {
 
   private mapAssistantMessage(
     msg: SDKAssistantMessage,
-    base: Omit<GSDEvent, 'type'>,
-  ): GSDEvent | null {
-    const events: GSDEvent[] = [];
+    base: Omit<WSFEvent, 'type'>,
+  ): WSFEvent | null {
+    const events: WSFEvent[] = [];
 
     // Extract text blocks — content blocks are a discriminated union with a 'type' field
     const content = msg.message.content as Array<{ type: string; [key: string]: unknown }>;
@@ -320,9 +320,9 @@ export class GSDEventStream extends EventEmitter {
       if (text.length > 0) {
         events.push({
           ...base,
-          type: GSDEventType.AssistantText,
+          type: WSFEventType.AssistantText,
           text,
-        } as GSDAssistantTextEvent);
+        } as WSFAssistantTextEvent);
       }
     }
 
@@ -334,11 +334,11 @@ export class GSDEventStream extends EventEmitter {
     for (const block of toolUseBlocks) {
       events.push({
         ...base,
-        type: GSDEventType.ToolCall,
+        type: WSFEventType.ToolCall,
         toolName: block.name,
         toolUseId: block.id,
         input: block.input as Record<string, unknown>,
-      } as GSDToolCallEvent);
+      } as WSFToolCallEvent);
     }
 
     // Return the first event — for multi-event messages, emit the rest
@@ -357,8 +357,8 @@ export class GSDEventStream extends EventEmitter {
 
   private mapResultMessage(
     msg: SDKResultSuccess | SDKResultError,
-    base: Omit<GSDEvent, 'type'>,
-  ): GSDEvent {
+    base: Omit<WSFEvent, 'type'>,
+  ): WSFEvent {
     // Update cost tracking
     this.updateCost(msg.session_id, msg.total_cost_usd);
 
@@ -366,74 +366,74 @@ export class GSDEventStream extends EventEmitter {
       const successMsg = msg as SDKResultSuccess;
       return {
         ...base,
-        type: GSDEventType.SessionComplete,
+        type: WSFEventType.SessionComplete,
         success: true,
         totalCostUsd: successMsg.total_cost_usd,
         durationMs: successMsg.duration_ms,
         numTurns: successMsg.num_turns,
         result: successMsg.result,
-      } as GSDSessionCompleteEvent;
+      } as WSFSessionCompleteEvent;
     }
 
     const errorMsg = msg as SDKResultError;
     return {
       ...base,
-      type: GSDEventType.SessionError,
+      type: WSFEventType.SessionError,
       success: false,
       totalCostUsd: errorMsg.total_cost_usd,
       durationMs: errorMsg.duration_ms,
       numTurns: errorMsg.num_turns,
       errorSubtype: errorMsg.subtype,
       errors: errorMsg.errors,
-    } as GSDSessionErrorEvent;
+    } as WSFSessionErrorEvent;
   }
 
   private mapToolProgressMessage(
     msg: SDKToolProgressMessage,
-    base: Omit<GSDEvent, 'type'>,
-  ): GSDToolProgressEvent {
+    base: Omit<WSFEvent, 'type'>,
+  ): WSFToolProgressEvent {
     return {
       ...base,
-      type: GSDEventType.ToolProgress,
+      type: WSFEventType.ToolProgress,
       toolName: msg.tool_name,
       toolUseId: msg.tool_use_id,
       elapsedSeconds: msg.elapsed_time_seconds,
-    } as GSDToolProgressEvent;
+    } as WSFToolProgressEvent;
   }
 
   private mapToolUseSummaryMessage(
     msg: SDKToolUseSummaryMessage,
-    base: Omit<GSDEvent, 'type'>,
-  ): GSDToolUseSummaryEvent {
+    base: Omit<WSFEvent, 'type'>,
+  ): WSFToolUseSummaryEvent {
     return {
       ...base,
-      type: GSDEventType.ToolUseSummary,
+      type: WSFEventType.ToolUseSummary,
       summary: msg.summary,
       toolUseIds: msg.preceding_tool_use_ids,
-    } as GSDToolUseSummaryEvent;
+    } as WSFToolUseSummaryEvent;
   }
 
   private mapRateLimitMessage(
     msg: SDKRateLimitEvent,
-    base: Omit<GSDEvent, 'type'>,
-  ): GSDRateLimitEventType {
+    base: Omit<WSFEvent, 'type'>,
+  ): WSFRateLimitEventType {
     return {
       ...base,
-      type: GSDEventType.RateLimit,
+      type: WSFEventType.RateLimit,
       status: msg.rate_limit_info.status,
       resetsAt: msg.rate_limit_info.resetsAt,
       utilization: msg.rate_limit_info.utilization,
-    } as GSDRateLimitEventType;
+    } as WSFRateLimitEventType;
   }
 
   private mapStreamEvent(
     msg: SDKPartialAssistantMessage,
-    base: Omit<GSDEvent, 'type'>,
-  ): GSDStreamEvent {
+    base: Omit<WSFEvent, 'type'>,
+  ): WSFStreamEvent {
     return {
       ...base,
-      type: GSDEventType.StreamEvent,
+      type: WSFEventType.StreamEvent,
       event: msg.event,
-    } as GSDStreamEvent;
+    } as WSFStreamEvent;
   }
 }

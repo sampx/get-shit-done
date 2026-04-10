@@ -18,7 +18,7 @@ import { constants } from 'node:fs';
 
 import type { ContextFiles } from './types.js';
 import { PhaseType } from './types.js';
-import type { GSDLogger } from './logger.js';
+import type { WSFLogger } from './logger.js';
 import {
   truncateMarkdown,
   extractCurrentMilestone,
@@ -74,10 +74,10 @@ const PHASE_FILE_MANIFEST: Record<PhaseType, FileSpec[]> = {
 
 export class ContextEngine {
   private readonly planningDir: string;
-  private readonly logger?: GSDLogger;
+  private readonly logger?: WSFLogger;
   private readonly truncation: TruncationOptions;
 
-  constructor(projectDir: string, logger?: GSDLogger, truncation?: Partial<TruncationOptions>) {
+  constructor(projectDir: string, logger?: WSFLogger, truncation?: Partial<TruncationOptions>) {
     this.planningDir = join(projectDir, '.planning');
     this.logger = logger;
     this.truncation = { ...DEFAULT_TRUNCATION_OPTIONS, ...truncation };

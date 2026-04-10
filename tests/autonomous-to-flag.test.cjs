@@ -1,5 +1,5 @@
 /**
- * GSD Tools Tests - autonomous --to N flag
+ * WSF Tools Tests - autonomous --to N flag
  *
  * Validates that the autonomous workflow and command definition
  * correctly document and support the --to N flag to stop after
@@ -14,8 +14,8 @@ const fs = require('fs');
 const path = require('path');
 
 describe('autonomous --to N flag (#1644)', () => {
-  const workflowPath = path.join(__dirname, '..', 'get-shit-done', 'workflows', 'autonomous.md');
-  const commandPath = path.join(__dirname, '..', 'commands', 'gsd', 'autonomous.md');
+  const workflowPath = path.join(__dirname, '..', 'wsf', 'workflows', 'autonomous.md');
+  const commandPath = path.join(__dirname, '..', 'commands', 'wsf', 'autonomous.md');
 
   // --- Command definition tests ---
 

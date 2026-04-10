@@ -5,7 +5,7 @@
  * hooks resolve correctly regardless of the shell's current working directory.
  *
  * The original bug: local install hook commands used bare relative paths like
- * `node .claude/hooks/gsd-context-monitor.js`. Claude Code persists the bash
+ * `node .claude/hooks/wsf-context-monitor.js`. Claude Code persists the bash
  * tool's cwd between calls, so a single `cd subdir && …` early in a session
  * permanently broke every hook for the rest of that session.
  *
@@ -24,15 +24,15 @@ const INSTALL_SRC = path.join(__dirname, '..', 'bin', 'install.js');
 
 // All hooks that the installer registers for local installs
 const HOOKS = [
-  'gsd-statusline.js',
-  'gsd-check-update.js',
-  'gsd-context-monitor.js',
-  'gsd-prompt-guard.js',
-  'gsd-read-guard.js',
-  'gsd-workflow-guard.js',
-  'gsd-validate-commit.sh',
-  'gsd-session-state.sh',
-  'gsd-phase-boundary.sh',
+  'wsf-statusline.js',
+  'wsf-check-update.js',
+  'wsf-context-monitor.js',
+  'wsf-prompt-guard.js',
+  'wsf-read-guard.js',
+  'wsf-workflow-guard.js',
+  'wsf-validate-commit.sh',
+  'wsf-session-state.sh',
+  'wsf-phase-boundary.sh',
 ];
 
 describe('bug #1906: local hook commands use $CLAUDE_PROJECT_DIR', () => {

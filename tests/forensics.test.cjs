@@ -1,5 +1,5 @@
 /**
- * GSD Forensics Tests
+ * WSF Forensics Tests
  *
  * Validates the forensics command and workflow files exist,
  * follow expected patterns, and cover all anomaly detection types.
@@ -12,17 +12,17 @@ const path = require('path');
 const os = require('os');
 
 const repoRoot = path.resolve(__dirname, '..');
-const commandPath = path.join(repoRoot, 'commands', 'gsd', 'forensics.md');
-const workflowPath = path.join(repoRoot, 'get-shit-done', 'workflows', 'forensics.md');
+const commandPath = path.join(repoRoot, 'commands', 'wsf', 'forensics.md');
+const workflowPath = path.join(repoRoot, 'wsf', 'workflows', 'forensics.md');
 
 describe('forensics command', () => {
   test('command file exists', () => {
-    assert.ok(fs.existsSync(commandPath), 'commands/gsd/forensics.md should exist');
+    assert.ok(fs.existsSync(commandPath), 'commands/wsf/forensics.md should exist');
   });
 
   test('command has correct frontmatter', () => {
     const content = fs.readFileSync(commandPath, 'utf-8');
-    assert.ok(content.includes('name: gsd:forensics'), 'should have correct command name');
+    assert.ok(content.includes('name: wsf-forensics'), 'should have correct command name');
     assert.ok(content.includes('type: prompt'), 'should have type: prompt');
     assert.ok(content.includes('argument-hint'), 'should have argument-hint');
   });
@@ -142,7 +142,7 @@ describe('forensics workflow', () => {
     const content = fs.readFileSync(workflowPath, 'utf-8');
     assert.ok(
       content.includes('state record-session'),
-      'should update STATE.md via gsd-tools'
+      'should update STATE.md via wsf-tools'
     );
   });
 
@@ -189,7 +189,7 @@ describe('forensics fixture-based tests', () => {
   let tmpDir;
 
   beforeEach(() => {
-    tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'gsd-forensics-test-'));
+    tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'wsf-forensics-test-'));
   });
 
   afterEach(() => {

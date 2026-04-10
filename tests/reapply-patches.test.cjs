@@ -1,5 +1,5 @@
 /**
- * GSD Tools Tests - reapply-patches backup logic
+ * WSF Tools Tests - reapply-patches backup logic
  *
  * Validates that saveLocalPatches() in the installer correctly detects
  * user-modified files and saves pristine hashes for three-way merge.
@@ -20,7 +20,7 @@ function sha256(content) {
 }
 
 function createTempDir() {
-  return fs.mkdtempSync(path.join(require('os').tmpdir(), 'gsd-patch-test-'));
+  return fs.mkdtempSync(path.join(require('os').tmpdir(), 'wsf-patch-test-'));
 }
 
 function cleanup(dir) {
@@ -32,7 +32,7 @@ function cleanup(dir) {
  * then run the saveLocalPatches detection logic.
  */
 function simulateManifestAndPatch(configDir, files) {
-  // Create the GSD files
+  // Create the WSF files
   for (const [relPath, content] of Object.entries(files.original)) {
     const fullPath = path.join(configDir, relPath);
     fs.mkdirSync(path.dirname(fullPath), { recursive: true });
@@ -49,7 +49,7 @@ function simulateManifestAndPatch(configDir, files) {
     manifest.files[relPath] = sha256(content);
   }
   fs.writeFileSync(
-    path.join(configDir, 'gsd-file-manifest.json'),
+    path.join(configDir, 'wsf-file-manifest.json'),
     JSON.stringify(manifest, null, 2)
   );
 
@@ -69,8 +69,8 @@ function fileHash(filePath) {
 }
 
 function saveLocalPatches(configDir) {
-  const PATCHES_DIR_NAME = 'gsd-local-patches';
-  const MANIFEST_NAME = 'gsd-file-manifest.json';
+  const PATCHES_DIR_NAME = 'wsf-local-patches';
+  const MANIFEST_NAME = 'wsf-file-manifest.json';
   const manifestPath = path.join(configDir, MANIFEST_NAME);
   if (!fs.existsSync(manifestPath)) return [];
 
@@ -124,21 +124,21 @@ describe('saveLocalPatches — patch backup and pristine hash tracking (#1469)',
   test('detects modified files and backs them up', () => {
     simulateManifestAndPatch(tmpDir, {
       original: {
-        'get-shit-done/workflows/execute-phase.md': '# Execute Phase\nOriginal content\n',
-        'get-shit-done/workflows/plan-phase.md': '# Plan Phase\nOriginal content\n',
+        'wsf/workflows/execute-phase.md': '# Execute Phase\nOriginal content\n',
+        'wsf/workflows/plan-phase.md': '# Plan Phase\nOriginal content\n',
       },
       modified: {
-        'get-shit-done/workflows/execute-phase.md': '# Execute Phase\nOriginal content\n\n## My Custom Step\nDo something special\n',
+        'wsf/workflows/execute-phase.md': '# Execute Phase\nOriginal content\n\n## My Custom Step\nDo something special\n',
       },
     });
 
     const result = saveLocalPatches(tmpDir);
 
     assert.strictEqual(result.length, 1, 'should detect exactly one modified file');
-    assert.ok(result.includes('get-shit-done/workflows/execute-phase.md'));
+    assert.ok(result.includes('wsf/workflows/execute-phase.md'));
 
     // Verify backup exists
-    const backupPath = path.join(tmpDir, 'gsd-local-patches', 'get-shit-done/workflows/execute-phase.md');
+    const backupPath = path.join(tmpDir, 'wsf-local-patches', 'wsf/workflows/execute-phase.md');
     assert.ok(fs.existsSync(backupPath), 'backup file should exist');
 
     const backupContent = fs.readFileSync(backupPath, 'utf8');
@@ -149,16 +149,16 @@ describe('saveLocalPatches — patch backup and pristine hash tracking (#1469)',
     const originalContent = '# Execute Phase\nOriginal content\n';
     simulateManifestAndPatch(tmpDir, {
       original: {
-        'get-shit-done/workflows/execute-phase.md': originalContent,
+        'wsf/workflows/execute-phase.md': originalContent,
       },
       modified: {
-        'get-shit-done/workflows/execute-phase.md': originalContent + '\n## Custom\n',
+        'wsf/workflows/execute-phase.md': originalContent + '\n## Custom\n',
       },
     });
 
     saveLocalPatches(tmpDir);
 
-    const metaPath = path.join(tmpDir, 'gsd-local-patches', 'backup-meta.json');
+    const metaPath = path.join(tmpDir, 'wsf-local-patches', 'backup-meta.json');
     assert.ok(fs.existsSync(metaPath), 'backup-meta.json should exist');
 
     const meta = JSON.parse(fs.readFileSync(metaPath, 'utf8'));
@@ -167,7 +167,7 @@ describe('saveLocalPatches — patch backup and pristine hash tracking (#1469)',
     assert.ok(meta.pristine_hashes, 'meta should have pristine_hashes field');
     const expectedHash = sha256(originalContent);
     assert.strictEqual(
-      meta.pristine_hashes['get-shit-done/workflows/execute-phase.md'],
+      meta.pristine_hashes['wsf/workflows/execute-phase.md'],
       expectedHash,
       'pristine hash should match SHA-256 of original file content'
     );
@@ -175,14 +175,14 @@ describe('saveLocalPatches — patch backup and pristine hash tracking (#1469)',
 
   test('backup-meta.json includes from_version and from_manifest_timestamp', () => {
     simulateManifestAndPatch(tmpDir, {
-      original: { 'get-shit-done/workflows/test.md': 'original' },
-      modified: { 'get-shit-done/workflows/test.md': 'modified' },
+      original: { 'wsf/workflows/test.md': 'original' },
+      modified: { 'wsf/workflows/test.md': 'modified' },
     });
 
     saveLocalPatches(tmpDir);
 
     const meta = JSON.parse(fs.readFileSync(
-      path.join(tmpDir, 'gsd-local-patches', 'backup-meta.json'), 'utf8'
+      path.join(tmpDir, 'wsf-local-patches', 'backup-meta.json'), 'utf8'
     ));
 
     assert.strictEqual(meta.from_version, '1.0.0');
@@ -193,27 +193,27 @@ describe('saveLocalPatches — patch backup and pristine hash tracking (#1469)',
   test('unmodified files are not backed up', () => {
     simulateManifestAndPatch(tmpDir, {
       original: {
-        'get-shit-done/workflows/a.md': 'content A',
-        'get-shit-done/workflows/b.md': 'content B',
+        'wsf/workflows/a.md': 'content A',
+        'wsf/workflows/b.md': 'content B',
       },
       // No modifications
     });
 
     const result = saveLocalPatches(tmpDir);
     assert.strictEqual(result.length, 0, 'no files should be detected as modified');
-    assert.ok(!fs.existsSync(path.join(tmpDir, 'gsd-local-patches')), 'patches dir should not be created');
+    assert.ok(!fs.existsSync(path.join(tmpDir, 'wsf-local-patches')), 'patches dir should not be created');
   });
 
   test('multiple modified files all get pristine hashes', () => {
     simulateManifestAndPatch(tmpDir, {
       original: {
-        'get-shit-done/workflows/a.md': 'original A',
-        'get-shit-done/workflows/b.md': 'original B',
-        'get-shit-done/workflows/c.md': 'original C',
+        'wsf/workflows/a.md': 'original A',
+        'wsf/workflows/b.md': 'original B',
+        'wsf/workflows/c.md': 'original C',
       },
       modified: {
-        'get-shit-done/workflows/a.md': 'modified A',
-        'get-shit-done/workflows/b.md': 'modified B',
+        'wsf/workflows/a.md': 'modified A',
+        'wsf/workflows/b.md': 'modified B',
       },
     });
 
@@ -221,14 +221,14 @@ describe('saveLocalPatches — patch backup and pristine hash tracking (#1469)',
     assert.strictEqual(result.length, 2);
 
     const meta = JSON.parse(fs.readFileSync(
-      path.join(tmpDir, 'gsd-local-patches', 'backup-meta.json'), 'utf8'
+      path.join(tmpDir, 'wsf-local-patches', 'backup-meta.json'), 'utf8'
     ));
 
     assert.strictEqual(Object.keys(meta.pristine_hashes).length, 2);
-    assert.strictEqual(meta.pristine_hashes['get-shit-done/workflows/a.md'], sha256('original A'));
-    assert.strictEqual(meta.pristine_hashes['get-shit-done/workflows/b.md'], sha256('original B'));
+    assert.strictEqual(meta.pristine_hashes['wsf/workflows/a.md'], sha256('original A'));
+    assert.strictEqual(meta.pristine_hashes['wsf/workflows/b.md'], sha256('original B'));
     // c.md should NOT have a pristine hash (it wasn't modified)
-    assert.strictEqual(meta.pristine_hashes['get-shit-done/workflows/c.md'], undefined);
+    assert.strictEqual(meta.pristine_hashes['wsf/workflows/c.md'], undefined);
   });
 
   test('returns empty array when no manifest exists', () => {
@@ -237,7 +237,7 @@ describe('saveLocalPatches — patch backup and pristine hash tracking (#1469)',
   });
 
   test('returns empty array when manifest is malformed', () => {
-    fs.writeFileSync(path.join(tmpDir, 'gsd-file-manifest.json'), 'not json');
+    fs.writeFileSync(path.join(tmpDir, 'wsf-file-manifest.json'), 'not json');
     const result = saveLocalPatches(tmpDir);
     assert.strictEqual(result.length, 0);
   });
@@ -245,7 +245,7 @@ describe('saveLocalPatches — patch backup and pristine hash tracking (#1469)',
 
 describe('reapply-patches workflow contract (#1469)', () => {
   test('workflow file contains critical invariant about never skipping backed-up files', () => {
-    const workflowPath = path.join(__dirname, '..', 'commands', 'gsd', 'reapply-patches.md');
+    const workflowPath = path.join(__dirname, '..', 'commands', 'wsf', 'reapply-patches.md');
     const content = fs.readFileSync(workflowPath, 'utf8');
 
     // The workflow must explicitly state that "no custom content" is never valid
@@ -257,7 +257,7 @@ describe('reapply-patches workflow contract (#1469)', () => {
   });
 
   test('workflow file describes three-way merge strategy', () => {
-    const workflowPath = path.join(__dirname, '..', 'commands', 'gsd', 'reapply-patches.md');
+    const workflowPath = path.join(__dirname, '..', 'commands', 'wsf', 'reapply-patches.md');
     const content = fs.readFileSync(workflowPath, 'utf8');
 
     assert.ok(content.includes('three-way') || content.includes('Three-way'),
@@ -267,7 +267,7 @@ describe('reapply-patches workflow contract (#1469)', () => {
   });
 
   test('workflow file describes git-aware detection path', () => {
-    const workflowPath = path.join(__dirname, '..', 'commands', 'gsd', 'reapply-patches.md');
+    const workflowPath = path.join(__dirname, '..', 'commands', 'wsf', 'reapply-patches.md');
     const content = fs.readFileSync(workflowPath, 'utf8');
 
     assert.ok(content.includes('git log') || content.includes('git -C'),

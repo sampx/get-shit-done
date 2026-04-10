@@ -1,5 +1,5 @@
 /**
- * GSD Audit-Fix Command Tests
+ * WSF Audit-Fix Command Tests
  *
  * Validates the autonomous audit-to-fix pipeline:
  * - Command file exists with correct frontmatter
@@ -18,8 +18,8 @@ const fs = require('fs');
 const path = require('path');
 
 const REPO_ROOT = path.join(__dirname, '..');
-const COMMANDS_DIR = path.join(REPO_ROOT, 'commands', 'gsd');
-const WORKFLOWS_DIR = path.join(REPO_ROOT, 'get-shit-done', 'workflows');
+const COMMANDS_DIR = path.join(REPO_ROOT, 'commands', 'wsf');
+const WORKFLOWS_DIR = path.join(REPO_ROOT, 'wsf', 'workflows');
 
 // ─── 1. Command file — audit-fix.md ──────────────────────────────────────────
 
@@ -29,16 +29,16 @@ describe('AUDIT-FIX: command file', () => {
   test('command file exists', () => {
     assert.ok(
       fs.existsSync(cmdPath),
-      'audit-fix.md must exist in commands/gsd/'
+      'audit-fix.md must exist in commands/wsf/'
     );
   });
 
-  test('has valid frontmatter with name gsd:audit-fix', () => {
+  test('has valid frontmatter with name wsf-audit-fix', () => {
     const content = fs.readFileSync(cmdPath, 'utf-8');
     const frontmatter = content.split('---')[1] || '';
     assert.ok(
-      frontmatter.includes('name: gsd:audit-fix'),
-      'name must be gsd:audit-fix'
+      frontmatter.includes('name: wsf-audit-fix'),
+      'name must be wsf-audit-fix'
     );
   });
 
@@ -64,12 +64,12 @@ describe('AUDIT-FIX: command file', () => {
     );
   });
 
-  test('has argument-hint in frontmatter for /gsd-help discoverability', () => {
+  test('has argument-hint in frontmatter for /wsf-help discoverability', () => {
     const content = fs.readFileSync(cmdPath, 'utf-8');
     const frontmatter = content.split('---')[1] || '';
     assert.ok(
       frontmatter.includes('argument-hint:'),
-      'must have argument-hint in frontmatter for /gsd-help discoverability'
+      'must have argument-hint in frontmatter for /wsf-help discoverability'
     );
   });
 
@@ -118,7 +118,7 @@ describe('AUDIT-FIX: workflow file', () => {
   test('workflow file exists', () => {
     assert.ok(
       fs.existsSync(wfPath),
-      'audit-fix.md must exist in get-shit-done/workflows/'
+      'audit-fix.md must exist in wsf/workflows/'
     );
   });
 
@@ -140,15 +140,15 @@ describe('AUDIT-FIX: workflow file', () => {
     assert.ok(content.includes('</success_criteria>'), 'must close <success_criteria> section');
   });
 
-  test('has <available_agent_types> listing gsd-executor', () => {
+  test('has <available_agent_types> listing wsf-executor', () => {
     const content = fs.readFileSync(wfPath, 'utf-8');
     assert.ok(
       content.includes('<available_agent_types>'),
       'must have <available_agent_types> section'
     );
     assert.ok(
-      content.includes('gsd-executor'),
-      'must list gsd-executor as available agent type'
+      content.includes('wsf-executor'),
+      'must list wsf-executor as available agent type'
     );
   });
 });

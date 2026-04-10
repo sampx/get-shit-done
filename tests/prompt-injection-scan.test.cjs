@@ -29,7 +29,7 @@ const assert = require('node:assert/strict');
 const fs = require('fs');
 const path = require('path');
 
-const { scanForInjection, INJECTION_PATTERNS } = require('../get-shit-done/bin/lib/security.cjs');
+const { scanForInjection, INJECTION_PATTERNS } = require('../wsf/bin/lib/security.cjs');
 
 // ─── Configuration ──────────────────────────────────────────────────────────
 
@@ -39,8 +39,8 @@ const PROJECT_ROOT = path.join(__dirname, '..');
 const SCAN_DIRS = [
   'agents',
   'commands',
-  'get-shit-done/workflows',
-  'get-shit-done/bin/lib',
+  'wsf/workflows',
+  'wsf/bin/lib',
   'hooks',
 ];
 
@@ -50,10 +50,10 @@ const SCAN_EXTS = new Set(['.md', '.cjs', '.js', '.json']);
 // Files that legitimately reference injection patterns (e.g., security docs, this test)
 // or exceed the 50K size threshold due to legitimate workflow complexity
 const ALLOWLIST = new Set([
-  'get-shit-done/bin/lib/security.cjs',        // The security module itself
-  'get-shit-done/workflows/discuss-phase.md',  // Large workflow (~50K) with power mode + i18n
-  'get-shit-done/workflows/execute-phase.md',  // Large orchestration workflow (~51K) with wave execution + code-review gate
-  'hooks/gsd-prompt-guard.js',                  // The prompt guard hook
+  'wsf/bin/lib/security.cjs',        // The security module itself
+  'wsf/workflows/discuss-phase.md',  // Large workflow (~50K) with power mode + i18n
+  'wsf/workflows/execute-phase.md',  // Large orchestration workflow (~51K) with wave execution + code-review gate
+  'hooks/wsf-prompt-guard.js',                  // The prompt guard hook
   'tests/security.test.cjs',                    // Security tests
   'tests/prompt-injection-scan.test.cjs',       // This file
 ]);

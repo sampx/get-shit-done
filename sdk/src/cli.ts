@@ -1,8 +1,8 @@
 #!/usr/bin/env node
 /**
- * CLI entry point for gsd-sdk.
+ * CLI entry point for wsf-sdk.
  *
- * Usage: gsd-sdk run "<prompt>" [--project-dir <dir>] [--ws-port <port>]
+ * Usage: wsf-sdk run "<prompt>" [--project-dir <dir>] [--ws-port <port>]
  *                                [--model <model>] [--max-budget <n>]
  */
 
@@ -11,7 +11,7 @@ import { readFile } from 'node:fs/promises';
 import { resolve, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-import { GSD } from './index.js';
+import { WSF } from './index.js';
 import { CLITransport } from './cli-transport.js';
 import { WSTransport } from './ws-transport.js';
 import { InitRunner } from './init-runner.js';
@@ -77,7 +77,7 @@ export function parseCliArgs(argv: string[]): ParsedCliArgs {
 // ─── Usage ───────────────────────────────────────────────────────────────────
 
 export const USAGE = `
-Usage: gsd-sdk <command> [args] [options]
+Usage: wsf-sdk <command> [args] [options]
 
 Commands:
   run <prompt>          Run a full milestone from a text prompt
@@ -155,9 +155,9 @@ async function readStdin(): Promise<string> {
   if (stdin.isTTY) {
     throw new Error(
       'No input provided. Usage:\n' +
-      '  gsd-sdk init @path/to/prd.md\n' +
-      '  gsd-sdk init "build a todo app"\n' +
-      '  cat prd.md | gsd-sdk init'
+      '  wsf-sdk init @path/to/prd.md\n' +
+      '  wsf-sdk init "build a todo app"\n' +
+      '  cat prd.md | wsf-sdk init'
     );
   }
 
@@ -190,19 +190,19 @@ export async function main(argv: string[] = process.argv.slice(2)): Promise<void
 
   if (args.version) {
     const ver = await getVersion();
-    console.log(`gsd-sdk v${ver}`);
+    console.log(`wsf-sdk v${ver}`);
     return;
   }
 
   if (args.command !== 'run' && args.command !== 'init' && args.command !== 'auto') {
-    console.error('Error: Expected "gsd-sdk run <prompt>", "gsd-sdk auto", or "gsd-sdk init [input]"');
+    console.error('Error: Expected "wsf-sdk run <prompt>", "wsf-sdk auto", or "wsf-sdk init [input]"');
     console.error(USAGE);
     process.exitCode = 1;
     return;
   }
 
   if (args.command === 'run' && !args.prompt) {
-    console.error('Error: "gsd-sdk run" requires a prompt');
+    console.error('Error: "wsf-sdk run" requires a prompt');
     console.error(USAGE);
     process.exitCode = 1;
     return;
@@ -221,8 +221,8 @@ export async function main(argv: string[] = process.argv.slice(2)): Promise<void
 
     console.log(`[init] Resolved input: ${input.length} chars`);
 
-    // Build GSD instance for tools and event stream
-    const gsd = new GSD({
+    // Build WSF instance for tools and event stream
+    const wsf = new WSF({
       projectDir: args.projectDir,
       model: args.model,
       maxBudgetUsd: args.maxBudget,
@@ -230,23 +230,23 @@ export async function main(argv: string[] = process.argv.slice(2)): Promise<void
 
     // Wire CLI transport
     const cliTransport = new CLITransport();
-    gsd.addTransport(cliTransport);
+    wsf.addTransport(cliTransport);
 
     // Optional WebSocket transport
     let wsTransport: WSTransport | undefined;
     if (args.wsPort !== undefined) {
       wsTransport = new WSTransport({ port: args.wsPort });
       await wsTransport.start();
-      gsd.addTransport(wsTransport);
+      wsf.addTransport(wsTransport);
       console.log(`WebSocket transport listening on port ${args.wsPort}`);
     }
 
     try {
-      const tools = gsd.createTools();
+      const tools = wsf.createTools();
       const runner = new InitRunner({
         projectDir: args.projectDir,
         tools,
-        eventStream: gsd.eventStream,
+        eventStream: wsf.eventStream,
         config: {
           maxBudgetPerSession: args.maxBudget,
           orchestratorModel: args.model,
@@ -291,7 +291,7 @@ export async function main(argv: string[] = process.argv.slice(2)): Promise<void
 
   // ─── Auto command ─────────────────────────────────────────────────────────
   if (args.command === 'auto') {
-    const gsd = new GSD({
+    const wsf = new WSF({
       projectDir: args.projectDir,
       model: args.model,
       maxBudgetUsd: args.maxBudget,
@@ -300,14 +300,14 @@ export async function main(argv: string[] = process.argv.slice(2)): Promise<void
 
     // Wire CLI transport (always active)
     const cliTransport = new CLITransport();
-    gsd.addTransport(cliTransport);
+    wsf.addTransport(cliTransport);
 
     // Optional WebSocket transport
     let wsTransport: WSTransport | undefined;
     if (args.wsPort !== undefined) {
       wsTransport = new WSTransport({ port: args.wsPort });
       await wsTransport.start();
-      gsd.addTransport(wsTransport);
+      wsf.addTransport(wsTransport);
       console.log(`WebSocket transport listening on port ${args.wsPort}`);
     }
 
@@ -322,11 +322,11 @@ export async function main(argv: string[] = process.argv.slice(2)): Promise<void
 
         console.log(`[auto] Bootstrapping project from --init (${initInput.length} chars)`);
 
-        const tools = gsd.createTools();
+        const tools = wsf.createTools();
         const runner = new InitRunner({
           projectDir: args.projectDir,
           tools,
-          eventStream: gsd.eventStream,
+          eventStream: wsf.eventStream,
           config: {
             maxBudgetPerSession: args.maxBudget,
             orchestratorModel: args.model,
@@ -353,7 +353,7 @@ export async function main(argv: string[] = process.argv.slice(2)): Promise<void
         }
       }
 
-      const result = await gsd.run('');
+      const result = await wsf.run('');
 
       // Final summary
       const status = result.success ? 'SUCCESS' : 'FAILED';
@@ -379,8 +379,8 @@ export async function main(argv: string[] = process.argv.slice(2)): Promise<void
 
   // ─── Run command ─────────────────────────────────────────────────────────
 
-  // Build GSD instance
-  const gsd = new GSD({
+  // Build WSF instance
+  const wsf = new WSF({
     projectDir: args.projectDir,
     model: args.model,
     maxBudgetUsd: args.maxBudget,
@@ -388,19 +388,19 @@ export async function main(argv: string[] = process.argv.slice(2)): Promise<void
 
   // Wire CLI transport (always active)
   const cliTransport = new CLITransport();
-  gsd.addTransport(cliTransport);
+  wsf.addTransport(cliTransport);
 
   // Optional WebSocket transport
   let wsTransport: WSTransport | undefined;
   if (args.wsPort !== undefined) {
     wsTransport = new WSTransport({ port: args.wsPort });
     await wsTransport.start();
-    gsd.addTransport(wsTransport);
+    wsf.addTransport(wsTransport);
     console.log(`WebSocket transport listening on port ${args.wsPort}`);
   }
 
   try {
-    const result = await gsd.run(args.prompt!);
+    const result = await wsf.run(args.prompt!);
 
     // Final summary
     const status = result.success ? 'SUCCESS' : 'FAILED';

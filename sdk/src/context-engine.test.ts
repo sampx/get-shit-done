@@ -4,12 +4,12 @@ import { join } from 'node:path';
 import { tmpdir } from 'node:os';
 import { ContextEngine, PHASE_FILE_MANIFEST } from './context-engine.js';
 import { PhaseType } from './types.js';
-import type { GSDLogger } from './logger.js';
+import type { WSFLogger } from './logger.js';
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
 async function createTempProject(): Promise<string> {
-  return mkdtemp(join(tmpdir(), 'gsd-ctx-'));
+  return mkdtemp(join(tmpdir(), 'wsf-ctx-'));
 }
 
 async function createPlanningDir(projectDir: string, files: Record<string, string>): Promise<void> {
@@ -20,7 +20,7 @@ async function createPlanningDir(projectDir: string, files: Record<string, strin
   }
 }
 
-function makeMockLogger(): GSDLogger {
+function makeMockLogger(): WSFLogger {
   return {
     debug: vi.fn(),
     info: vi.fn(),
@@ -29,7 +29,7 @@ function makeMockLogger(): GSDLogger {
     setPhase: vi.fn(),
     setPlan: vi.fn(),
     setSessionId: vi.fn(),
-  } as unknown as GSDLogger;
+  } as unknown as WSFLogger;
 }
 
 // ─── Tests ───────────────────────────────────────────────────────────────────

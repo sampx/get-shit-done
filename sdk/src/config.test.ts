@@ -8,7 +8,7 @@ describe('loadConfig', () => {
   let tmpDir: string;
 
   beforeEach(async () => {
-    tmpDir = join(tmpdir(), `gsd-config-test-${Date.now()}-${Math.random().toString(36).slice(2)}`);
+    tmpDir = join(tmpdir(), `wsf-config-test-${Date.now()}-${Math.random().toString(36).slice(2)}`);
     await mkdir(join(tmpDir, '.planning'), { recursive: true });
   });
 
@@ -65,7 +65,7 @@ describe('loadConfig', () => {
 
     expect(config.git.branching_strategy).toBe('milestone');
     // Other git defaults preserved
-    expect(config.git.phase_branch_template).toBe('gsd/phase-{phase}-{slug}');
+    expect(config.git.phase_branch_template).toBe('wsf/phase-{phase}-{slug}');
     expect(config.hooks.context_warnings).toBe(false);
   });
 

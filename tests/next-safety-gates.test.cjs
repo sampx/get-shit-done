@@ -1,5 +1,5 @@
 /**
- * GSD Tools Tests - /gsd-next safety gates and consecutive-call guard
+ * WSF Tools Tests - /wsf-next safety gates and consecutive-call guard
  *
  * Validates that the next workflow includes three hard-stop safety gates
  * (checkpoint, error state, verification), a consecutive-call budget guard,
@@ -13,9 +13,9 @@ const assert = require('node:assert/strict');
 const fs = require('fs');
 const path = require('path');
 
-describe('/gsd-next safety gates (#1732)', () => {
-  const workflowPath = path.join(__dirname, '..', 'get-shit-done', 'workflows', 'next.md');
-  const commandPath = path.join(__dirname, '..', 'commands', 'gsd', 'next.md');
+describe('/wsf-next safety gates (#1732)', () => {
+  const workflowPath = path.join(__dirname, '..', 'wsf', 'workflows', 'next.md');
+  const commandPath = path.join(__dirname, '..', 'commands', 'wsf', 'next.md');
 
   test('workflow contains safety_gates step', () => {
     const content = fs.readFileSync(workflowPath, 'utf8');

@@ -1,5 +1,5 @@
 /**
- * GSD Tools Tests - Adaptive Context Enrichment for 1M Models
+ * WSF Tools Tests - Adaptive Context Enrichment for 1M Models
  *
  * Tests for feat/1m-context-enrichment-1473b:
  *   - Workflow template syntax validation (CONTEXT_WINDOW conditionals)
@@ -17,7 +17,7 @@ const path = require('path');
 // ─────────────────────────────────────────────────────────────────────────────
 
 describe('execute-phase.md context enrichment', () => {
-  const EXECUTE_WORKFLOW_PATH = path.join(__dirname, '..', 'get-shit-done', 'workflows', 'execute-phase.md');
+  const EXECUTE_WORKFLOW_PATH = path.join(__dirname, '..', 'wsf', 'workflows', 'execute-phase.md');
 
   test('contains CONTEXT_WINDOW config-get command', () => {
     const content = fs.readFileSync(EXECUTE_WORKFLOW_PATH, 'utf-8');
@@ -100,7 +100,7 @@ describe('execute-phase.md context enrichment', () => {
 });
 
 describe('plan-phase.md context enrichment', () => {
-  const PLAN_WORKFLOW_PATH = path.join(__dirname, '..', 'get-shit-done', 'workflows', 'plan-phase.md');
+  const PLAN_WORKFLOW_PATH = path.join(__dirname, '..', 'wsf', 'workflows', 'plan-phase.md');
 
   test('contains CONTEXT_WINDOW conditional for prior CONTEXT.md', () => {
     const content = fs.readFileSync(PLAN_WORKFLOW_PATH, 'utf-8');

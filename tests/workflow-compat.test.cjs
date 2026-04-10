@@ -28,9 +28,9 @@ function collectMdFiles(dir) {
 }
 
 const SCAN_DIRS = [
-  path.join(ROOT, 'get-shit-done', 'workflows'),
-  path.join(ROOT, 'get-shit-done', 'references'),
-  path.join(ROOT, 'commands', 'gsd'),
+  path.join(ROOT, 'wsf', 'workflows'),
+  path.join(ROOT, 'wsf', 'references'),
+  path.join(ROOT, 'commands', 'wsf'),
   path.join(ROOT, 'agents'),
 ];
 

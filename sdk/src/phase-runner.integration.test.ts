@@ -1,7 +1,7 @@
 /**
- * Integration test — proves PhaseRunner state machine works against real gsd-tools.cjs.
+ * Integration test — proves PhaseRunner state machine works against real wsf-tools.cjs.
  *
- * Creates a temp `.planning/` directory structure, instantiates real GSDTools,
+ * Creates a temp `.planning/` directory structure, instantiates real WSFTools,
  * and exercises the state machine. Sessions will fail (no Claude CLI in CI) but
  * the state machine's control flow, event emission, and error capture are proven.
  */
@@ -12,23 +12,23 @@ import { existsSync } from 'node:fs';
 import { join } from 'node:path';
 import { tmpdir } from 'node:os';
 
-import { GSDTools, resolveGsdToolsPath } from './gsd-tools.js';
+import { WSFTools, resolveWsfToolsPath } from './wsf-tools.js';
 import { PhaseRunner } from './phase-runner.js';
 import type { PhaseRunnerDeps } from './phase-runner.js';
 import { ContextEngine } from './context-engine.js';
 import { PromptFactory } from './phase-prompt.js';
-import { GSDEventStream } from './event-stream.js';
+import { WSFEventStream } from './event-stream.js';
 import { loadConfig } from './config.js';
-import type { GSDEvent } from './types.js';
-import { GSDEventType, PhaseStepType } from './types.js';
+import type { WSFEvent } from './types.js';
+import { WSFEventType, PhaseStepType } from './types.js';
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
-const GSD_TOOLS_PATH = resolveGsdToolsPath(process.cwd());
-const gsdToolsAvailable = existsSync(GSD_TOOLS_PATH);
+const WSF_TOOLS_PATH = resolveWsfToolsPath(process.cwd());
+const wsfToolsAvailable = existsSync(WSF_TOOLS_PATH);
 
 async function createTempPlanningDir(): Promise<string> {
-  const tmpDir = await mkdtemp(join(tmpdir(), 'gsd-sdk-phase-int-'));
+  const tmpDir = await mkdtemp(join(tmpdir(), 'wsf-sdk-phase-int-'));
 
   // Create .planning structure
   const planningDir = join(tmpDir, '.planning');
@@ -66,15 +66,15 @@ async function createTempPlanningDir(): Promise<string> {
 
 // ─── Test suite ──────────────────────────────────────────────────────────────
 
-describe.skipIf(!gsdToolsAvailable)('Integration: PhaseRunner against real gsd-tools.cjs', () => {
+describe.skipIf(!wsfToolsAvailable)('Integration: PhaseRunner against real wsf-tools.cjs', () => {
   let tmpDir: string;
-  let tools: GSDTools;
+  let tools: WSFTools;
 
   beforeAll(async () => {
     tmpDir = await createTempPlanningDir();
-    tools = new GSDTools({
+    tools = new WSFTools({
       projectDir: tmpDir,
-      gsdToolsPath: GSD_TOOLS_PATH,
+      wsfToolsPath: WSF_TOOLS_PATH,
       timeoutMs: 10_000,
     });
   });
@@ -112,13 +112,13 @@ describe.skipIf(!gsdToolsAvailable)('Integration: PhaseRunner against real gsd-t
   // ── Test 2: PhaseRunner state machine control flow ──
 
   it('PhaseRunner emits lifecycle events and captures session errors gracefully', { timeout: 300_000 }, async () => {
-    const eventStream = new GSDEventStream();
+    const eventStream = new WSFEventStream();
     const config = await loadConfig(tmpDir);
     const contextEngine = new ContextEngine(tmpDir);
     const promptFactory = new PromptFactory();
 
-    const events: GSDEvent[] = [];
-    eventStream.on('event', (e: GSDEvent) => events.push(e));
+    const events: WSFEvent[] = [];
+    eventStream.on('event', (e: WSFEvent) => events.push(e));
 
     const deps: PhaseRunnerDeps = {
       projectDir: tmpDir,
@@ -137,10 +137,10 @@ describe.skipIf(!gsdToolsAvailable)('Integration: PhaseRunner against real gsd-t
     });
 
     // ── (a) Phase start event emitted ──
-    const phaseStartEvents = events.filter(e => e.type === GSDEventType.PhaseStart);
+    const phaseStartEvents = events.filter(e => e.type === WSFEventType.PhaseStart);
     expect(phaseStartEvents).toHaveLength(1);
     const phaseStart = phaseStartEvents[0]!;
-    if (phaseStart.type === GSDEventType.PhaseStart) {
+    if (phaseStart.type === WSFEventType.PhaseStart) {
       expect(phaseStart.phaseNumber).toBe('01');
       expect(phaseStart.phaseName).toBe('integration-test');
     }
@@ -151,7 +151,7 @@ describe.skipIf(!gsdToolsAvailable)('Integration: PhaseRunner against real gsd-t
     expect(discussSteps).toHaveLength(0);
 
     // ── (c) Step start events emitted for attempted steps ──
-    const stepStartEvents = events.filter(e => e.type === GSDEventType.PhaseStepStart);
+    const stepStartEvents = events.filter(e => e.type === WSFEventType.PhaseStepStart);
     expect(stepStartEvents.length).toBeGreaterThanOrEqual(1);
 
     // ── (d) Step results are properly structured ──
@@ -167,7 +167,7 @@ describe.skipIf(!gsdToolsAvailable)('Integration: PhaseRunner against real gsd-t
     }
 
     // ── (e) Phase complete event emitted ──
-    const phaseCompleteEvents = events.filter(e => e.type === GSDEventType.PhaseComplete);
+    const phaseCompleteEvents = events.filter(e => e.type === WSFEventType.PhaseComplete);
     expect(phaseCompleteEvents).toHaveLength(1);
 
     // ── (f) Result structure is valid ──
@@ -181,7 +181,7 @@ describe.skipIf(!gsdToolsAvailable)('Integration: PhaseRunner against real gsd-t
   // ── Test 3: PhaseRunner with nonexistent phase throws ──
 
   it('PhaseRunner throws PhaseRunnerError for nonexistent phase', async () => {
-    const eventStream = new GSDEventStream();
+    const eventStream = new WSFEventStream();
     const config = await loadConfig(tmpDir);
     const contextEngine = new ContextEngine(tmpDir);
     const promptFactory = new PromptFactory();
@@ -199,27 +199,27 @@ describe.skipIf(!gsdToolsAvailable)('Integration: PhaseRunner against real gsd-t
     await expect(runner.run('99')).rejects.toThrow('Phase 99 not found on disk');
   });
 
-  // ── Test 4: GSD.runPhase() public API delegates correctly ──
+  // ── Test 4: WSF.runPhase() public API delegates correctly ──
 
-  it('GSD.runPhase() creates collaborators and delegates to PhaseRunner', { timeout: 300_000 }, async () => {
-    // Import GSD here to test the public API wiring
-    const { GSD } = await import('./index.js');
+  it('WSF.runPhase() creates collaborators and delegates to PhaseRunner', { timeout: 300_000 }, async () => {
+    // Import WSF here to test the public API wiring
+    const { WSF } = await import('./index.js');
 
-    const gsd = new GSD({ projectDir: tmpDir });
-    const events: GSDEvent[] = [];
-    gsd.onEvent((e) => events.push(e));
+    const wsf = new WSF({ projectDir: tmpDir });
+    const events: WSFEvent[] = [];
+    wsf.onEvent((e) => events.push(e));
 
-    const result = await gsd.runPhase('01', {
+    const result = await wsf.runPhase('01', {
       maxTurnsPerStep: 2,
       maxBudgetPerStep: 0.10,
     });
 
-    // Proves the full wiring works: GSD → PhaseRunner → GSDTools → gsd-tools.cjs
+    // Proves the full wiring works: WSF → PhaseRunner → WSFTools → wsf-tools.cjs
     expect(result.phaseNumber).toBe('01');
     expect(result.phaseName).toBe('integration-test');
     expect(result.steps.length).toBeGreaterThanOrEqual(1);
-    expect(events.some(e => e.type === GSDEventType.PhaseStart)).toBe(true);
-    expect(events.some(e => e.type === GSDEventType.PhaseComplete)).toBe(true);
+    expect(events.some(e => e.type === WSFEventType.PhaseStart)).toBe(true);
+    expect(events.some(e => e.type === WSFEventType.PhaseComplete)).toBe(true);
   });
 });
 
@@ -232,7 +232,7 @@ describe.skipIf(!gsdToolsAvailable)('Integration: PhaseRunner against real gsd-t
  * - Plan 01 has a SUMMARY.md (marks it as completed)
  */
 async function createMultiWavePlanningDir(): Promise<string> {
-  const tmpDir = await mkdtemp(join(tmpdir(), 'gsd-sdk-wave-int-'));
+  const tmpDir = await mkdtemp(join(tmpdir(), 'wsf-sdk-wave-int-'));
 
   const planningDir = join(tmpDir, '.planning');
   const phaseDir = join(planningDir, 'phases', '01-wave-test');
@@ -304,15 +304,15 @@ must_haves:
   return tmpDir;
 }
 
-describe.skipIf(!gsdToolsAvailable)('Integration: phasePlanIndex and wave execution', () => {
+describe.skipIf(!wsfToolsAvailable)('Integration: phasePlanIndex and wave execution', () => {
   let tmpDir: string;
-  let tools: GSDTools;
+  let tools: WSFTools;
 
   beforeAll(async () => {
     tmpDir = await createMultiWavePlanningDir();
-    tools = new GSDTools({
+    tools = new WSFTools({
       projectDir: tmpDir,
-      gsdToolsPath: GSD_TOOLS_PATH,
+      wsfToolsPath: WSF_TOOLS_PATH,
       timeoutMs: 10_000,
     });
   });

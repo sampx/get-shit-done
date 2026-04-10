@@ -22,9 +22,9 @@ const { describe, test, beforeEach, afterEach } = require('node:test');
 const assert = require('node:assert/strict');
 const fs = require('fs');
 const path = require('path');
-const { runGsdTools, createTempProject, cleanup } = require('./helpers.cjs');
+const { runWsfTools, createTempProject, cleanup } = require('./helpers.cjs');
 
-const { resolveModelInternal } = require('../get-shit-done/bin/lib/core.cjs');
+const { resolveModelInternal } = require('../wsf/bin/lib/core.cjs');
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -69,51 +69,51 @@ describe('bug #1829: model_profile "inherit" — resolveModelInternal', () => {
     cleanup(tmpDir);
   });
 
-  test('returns "inherit" for gsd-planner when model_profile is "inherit"', () => {
+  test('returns "inherit" for wsf-planner when model_profile is "inherit"', () => {
     writeConfig(tmpDir, { model_profile: 'inherit' });
-    assert.strictEqual(resolveModelInternal(tmpDir, 'gsd-planner'), 'inherit');
+    assert.strictEqual(resolveModelInternal(tmpDir, 'wsf-planner'), 'inherit');
   });
 
-  test('returns "inherit" for gsd-executor when model_profile is "inherit"', () => {
+  test('returns "inherit" for wsf-executor when model_profile is "inherit"', () => {
     writeConfig(tmpDir, { model_profile: 'inherit' });
-    assert.strictEqual(resolveModelInternal(tmpDir, 'gsd-executor'), 'inherit');
+    assert.strictEqual(resolveModelInternal(tmpDir, 'wsf-executor'), 'inherit');
   });
 
-  test('returns "inherit" for gsd-phase-researcher when model_profile is "inherit"', () => {
+  test('returns "inherit" for wsf-phase-researcher when model_profile is "inherit"', () => {
     writeConfig(tmpDir, { model_profile: 'inherit' });
-    assert.strictEqual(resolveModelInternal(tmpDir, 'gsd-phase-researcher'), 'inherit');
+    assert.strictEqual(resolveModelInternal(tmpDir, 'wsf-phase-researcher'), 'inherit');
   });
 
-  test('returns "inherit" for gsd-codebase-mapper when model_profile is "inherit"', () => {
+  test('returns "inherit" for wsf-codebase-mapper when model_profile is "inherit"', () => {
     writeConfig(tmpDir, { model_profile: 'inherit' });
-    assert.strictEqual(resolveModelInternal(tmpDir, 'gsd-codebase-mapper'), 'inherit');
+    assert.strictEqual(resolveModelInternal(tmpDir, 'wsf-codebase-mapper'), 'inherit');
   });
 
-  test('returns "inherit" for gsd-verifier when model_profile is "inherit"', () => {
+  test('returns "inherit" for wsf-verifier when model_profile is "inherit"', () => {
     writeConfig(tmpDir, { model_profile: 'inherit' });
-    assert.strictEqual(resolveModelInternal(tmpDir, 'gsd-verifier'), 'inherit');
+    assert.strictEqual(resolveModelInternal(tmpDir, 'wsf-verifier'), 'inherit');
   });
 
   test('returns "sonnet" (default) for unknown agent even with inherit profile', () => {
     writeConfig(tmpDir, { model_profile: 'inherit' });
-    assert.strictEqual(resolveModelInternal(tmpDir, 'gsd-nonexistent'), 'sonnet');
+    assert.strictEqual(resolveModelInternal(tmpDir, 'wsf-nonexistent'), 'sonnet');
   });
 
   test('per-agent override takes precedence over inherit profile', () => {
     writeConfig(tmpDir, {
       model_profile: 'inherit',
-      model_overrides: { 'gsd-executor': 'haiku' },
+      model_overrides: { 'wsf-executor': 'haiku' },
     });
     // Override wins even when profile is inherit
-    assert.strictEqual(resolveModelInternal(tmpDir, 'gsd-executor'), 'haiku');
+    assert.strictEqual(resolveModelInternal(tmpDir, 'wsf-executor'), 'haiku');
     // Other agents without override still inherit
-    assert.strictEqual(resolveModelInternal(tmpDir, 'gsd-planner'), 'inherit');
+    assert.strictEqual(resolveModelInternal(tmpDir, 'wsf-planner'), 'inherit');
   });
 
   test('does not silently fall back to "sonnet" (the original bug)', () => {
     writeConfig(tmpDir, { model_profile: 'inherit' });
     // Before the fix, this returned 'sonnet' (via balanced fallback)
-    const model = resolveModelInternal(tmpDir, 'gsd-planner');
+    const model = resolveModelInternal(tmpDir, 'wsf-planner');
     assert.notStrictEqual(model, 'sonnet', 'inherit profile must not silently fall back to sonnet');
   });
 });
@@ -131,13 +131,13 @@ describe('bug #1829: model_profile "inherit" — resolve-model CLI', () => {
     cleanup(tmpDir);
   });
 
-  test('CLI resolve-model returns "inherit" for gsd-executor with inherit profile', () => {
+  test('CLI resolve-model returns "inherit" for wsf-executor with inherit profile', () => {
     fs.writeFileSync(
       path.join(tmpDir, '.planning', 'config.json'),
       JSON.stringify({ model_profile: 'inherit' }, null, 2)
     );
 
-    const result = runGsdTools('resolve-model gsd-executor', tmpDir);
+    const result = runWsfTools('resolve-model wsf-executor', tmpDir);
     assert.ok(result.success, `resolve-model failed: ${result.error}`);
 
     const parsed = JSON.parse(result.output);
@@ -145,13 +145,13 @@ describe('bug #1829: model_profile "inherit" — resolve-model CLI', () => {
     assert.strictEqual(parsed.profile, 'inherit');
   });
 
-  test('CLI resolve-model returns "inherit" for gsd-planner with inherit profile', () => {
+  test('CLI resolve-model returns "inherit" for wsf-planner with inherit profile', () => {
     fs.writeFileSync(
       path.join(tmpDir, '.planning', 'config.json'),
       JSON.stringify({ model_profile: 'inherit' }, null, 2)
     );
 
-    const result = runGsdTools('resolve-model gsd-planner', tmpDir);
+    const result = runWsfTools('resolve-model wsf-planner', tmpDir);
     assert.ok(result.success, `resolve-model failed: ${result.error}`);
 
     const parsed = JSON.parse(result.output);
@@ -190,7 +190,7 @@ describe('bug #1829: model_profile "inherit" — validate health does not warn W
       }, null, 2)
     );
 
-    const result = runGsdTools('validate health', tmpDir);
+    const result = runWsfTools('validate health', tmpDir);
     assert.ok(result.success, `validate health failed: ${result.error}`);
 
     const output = JSON.parse(result.output);
@@ -206,7 +206,7 @@ describe('bug #1829: model_profile "inherit" — validate health does not warn W
       JSON.stringify({ model_profile: 'invalid-profile' }, null, 2)
     );
 
-    const result = runGsdTools('validate health', tmpDir);
+    const result = runWsfTools('validate health', tmpDir);
     assert.ok(result.success, `validate health failed: ${result.error}`);
 
     const output = JSON.parse(result.output);

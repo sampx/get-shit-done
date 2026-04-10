@@ -3,10 +3,10 @@ const assert = require('node:assert/strict');
 const fs = require('fs');
 const path = require('path');
 
-describe('MCP tool usage in GSD agents', () => {
+describe('MCP tool usage in WSF agents', () => {
   const agentFiles = [
-    path.join(__dirname, '..', 'agents', 'gsd-executor.md'),
-    path.join(__dirname, '..', 'agents', 'gsd-planner.md'),
+    path.join(__dirname, '..', 'agents', 'wsf-executor.md'),
+    path.join(__dirname, '..', 'agents', 'wsf-planner.md'),
   ];
 
   for (const agentFile of agentFiles) {
@@ -23,7 +23,7 @@ describe('MCP tool usage in GSD agents', () => {
     });
   }
 
-  test('gsd-executor.md explicitly instructs to use available MCP tools', () => {
+  test('wsf-executor.md explicitly instructs to use available MCP tools', () => {
     const content = fs.readFileSync(agentFiles[0], 'utf-8');
     assert.ok(
       content.includes('MCP') || content.includes('mcp__'),

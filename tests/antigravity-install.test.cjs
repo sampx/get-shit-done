@@ -1,11 +1,11 @@
 /**
- * GSD Tools Tests - Antigravity Install Plumbing
+ * WSF Tools Tests - Antigravity Install Plumbing
  *
  * Tests for Antigravity runtime directory resolution, config paths,
  * content conversion functions, and integration with the multi-runtime installer.
  */
 
-process.env.GSD_TEST_MODE = '1';
+process.env.WSF_TEST_MODE = '1';
 
 const { test, describe, beforeEach, afterEach } = require('node:test');
 const assert = require('node:assert/strict');
@@ -108,14 +108,14 @@ describe('getConfigDirFromHome (Antigravity)', () => {
 describe('convertClaudeToAntigravityContent', () => {
   describe('global install path replacements', () => {
     test('replaces ~/. claude/ with ~/.gemini/antigravity/', () => {
-      const input = 'See ~/.claude/get-shit-done/workflows/';
+      const input = 'See ~/.claude/wsf/workflows/';
       const result = convertClaudeToAntigravityContent(input, true);
-      assert.ok(result.includes('~/.gemini/antigravity/get-shit-done/workflows/'), result);
+      assert.ok(result.includes('~/.gemini/antigravity/wsf/workflows/'), result);
       assert.ok(!result.includes('~/.claude/'), result);
     });
 
     test('replaces $HOME/.claude/ with $HOME/.gemini/antigravity/', () => {
-      const input = 'path.join($HOME/.claude/get-shit-done)';
+      const input = 'path.join($HOME/.claude/wsf)';
       const result = convertClaudeToAntigravityContent(input, true);
       assert.ok(result.includes('$HOME/.gemini/antigravity/'), result);
       assert.ok(!result.includes('$HOME/.claude/'), result);
@@ -124,40 +124,40 @@ describe('convertClaudeToAntigravityContent', () => {
 
   describe('local install path replacements', () => {
     test('replaces ~/.claude/ with .agent/ for local installs', () => {
-      const input = 'See ~/.claude/get-shit-done/';
+      const input = 'See ~/.claude/wsf/';
       const result = convertClaudeToAntigravityContent(input, false);
-      assert.ok(result.includes('.agent/get-shit-done/'), result);
+      assert.ok(result.includes('.agent/wsf/'), result);
       assert.ok(!result.includes('~/.claude/'), result);
     });
 
     test('replaces ./.claude/ with ./.agent/', () => {
-      const input = 'path ./.claude/hooks/gsd-check-update.js';
+      const input = 'path ./.claude/hooks/wsf-check-update.js';
       const result = convertClaudeToAntigravityContent(input, false);
       assert.ok(result.includes('./.agent/hooks/'), result);
       assert.ok(!result.includes('./.claude/'), result);
     });
 
     test('replaces .claude/ with .agent/', () => {
-      const input = 'node .claude/hooks/gsd-statusline.js';
+      const input = 'node .claude/hooks/wsf-statusline.js';
       const result = convertClaudeToAntigravityContent(input, false);
-      assert.ok(result.includes('.agent/hooks/gsd-statusline.js'), result);
+      assert.ok(result.includes('.agent/hooks/wsf-statusline.js'), result);
       assert.ok(!result.includes('.claude/'), result);
     });
   });
 
   describe('command name conversion', () => {
-    test('converts /gsd:command to /gsd-command', () => {
-      const input = 'Run /gsd:new-project to start';
+    test('converts /wsf-command to /wsf-command', () => {
+      const input = 'Run /wsf-new-project to start';
       const result = convertClaudeToAntigravityContent(input, true);
-      assert.ok(result.includes('/gsd-new-project'), result);
-      assert.ok(!result.includes('gsd:'), result);
+      assert.ok(result.includes('/wsf-new-project'), result);
+      assert.ok(!result.includes('wsf:'), result);
     });
 
-    test('converts all gsd: references', () => {
-      const input = '/gsd:plan-phase and /gsd:execute-phase';
+    test('converts all wsf- references', () => {
+      const input = '/wsf-plan-phase and /wsf-execute-phase';
       const result = convertClaudeToAntigravityContent(input, false);
-      assert.ok(result.includes('/gsd-plan-phase'), result);
-      assert.ok(result.includes('/gsd-execute-phase'), result);
+      assert.ok(result.includes('/wsf-plan-phase'), result);
+      assert.ok(result.includes('/wsf-execute-phase'), result);
     });
   });
 
@@ -172,8 +172,8 @@ describe('convertClaudeToAntigravityContent', () => {
 
 describe('convertClaudeCommandToAntigravitySkill', () => {
   const claudeCommand = `---
-name: gsd:new-project
-description: Initialize a new GSD project with requirements and roadmap
+name: wsf-new-project
+description: Initialize a new WSF project with requirements and roadmap
 argument-hint: "[project-name]"
 allowed-tools:
   - Read
@@ -182,14 +182,14 @@ allowed-tools:
   - Agent
 ---
 
-Initialize new project at ~/.claude/get-shit-done/workflows/new-project.md
+Initialize new project at ~/.claude/wsf/workflows/new-project.md
 `;
 
   test('produces name and description only in frontmatter', () => {
-    const result = convertClaudeCommandToAntigravitySkill(claudeCommand, 'gsd-new-project', false);
+    const result = convertClaudeCommandToAntigravitySkill(claudeCommand, 'wsf-new-project', false);
     assert.ok(result.startsWith('---\n'), result);
-    assert.ok(result.includes('name: gsd-new-project'), result);
-    assert.ok(result.includes('description: Initialize a new GSD project'), result);
+    assert.ok(result.includes('name: wsf-new-project'), result);
+    assert.ok(result.includes('description: Initialize a new WSF project'), result);
     // No allowed-tools in output
     assert.ok(!result.includes('allowed-tools'), result);
     // No argument-hint in output
@@ -197,31 +197,31 @@ Initialize new project at ~/.claude/get-shit-done/workflows/new-project.md
   });
 
   test('applies path replacement in body', () => {
-    const result = convertClaudeCommandToAntigravitySkill(claudeCommand, 'gsd-new-project', false);
-    assert.ok(result.includes('.agent/get-shit-done/'), result);
+    const result = convertClaudeCommandToAntigravitySkill(claudeCommand, 'wsf-new-project', false);
+    assert.ok(result.includes('.agent/wsf/'), result);
     assert.ok(!result.includes('~/.claude/'), result);
   });
 
   test('uses provided skillName for name field', () => {
-    const result = convertClaudeCommandToAntigravitySkill(claudeCommand, 'gsd-custom-name', false);
-    assert.ok(result.includes('name: gsd-custom-name'), result);
+    const result = convertClaudeCommandToAntigravitySkill(claudeCommand, 'wsf-custom-name', false);
+    assert.ok(result.includes('name: wsf-custom-name'), result);
   });
 
-  test('converts gsd: command references in body', () => {
+  test('converts wsf- command references in body', () => {
     const content = `---
 name: test
 description: test skill
 ---
-Run /gsd:new-project to get started.
+Run /wsf-new-project to get started.
 `;
-    const result = convertClaudeCommandToAntigravitySkill(content, 'gsd-test', false);
-    assert.ok(result.includes('/gsd-new-project'), result);
-    assert.ok(!result.includes('gsd:'), result);
+    const result = convertClaudeCommandToAntigravitySkill(content, 'wsf-test', false);
+    assert.ok(result.includes('/wsf-new-project'), result);
+    assert.ok(!result.includes('wsf:'), result);
   });
 
   test('returns unchanged content when no frontmatter', () => {
     const noFm = 'Just some text without frontmatter.';
-    const result = convertClaudeCommandToAntigravitySkill(noFm, 'gsd-test', false);
+    const result = convertClaudeCommandToAntigravitySkill(noFm, 'wsf-test', false);
     // Path replacements still apply, but no frontmatter transformation
     assert.ok(!result.startsWith('---'), result);
   });
@@ -231,19 +231,19 @@ Run /gsd:new-project to get started.
 
 describe('convertClaudeAgentToAntigravityAgent', () => {
   const claudeAgent = `---
-name: gsd-executor
-description: Executes GSD plans with atomic commits
+name: wsf-executor
+description: Executes WSF plans with atomic commits
 tools: Read, Write, Edit, Bash, Glob, Grep, Task
 color: blue
 ---
 
-Execute plans from ~/.claude/get-shit-done/workflows/execute-phase.md
+Execute plans from ~/.claude/wsf/workflows/execute-phase.md
 `;
 
   test('preserves name and description', () => {
     const result = convertClaudeAgentToAntigravityAgent(claudeAgent, false);
-    assert.ok(result.includes('name: gsd-executor'), result);
-    assert.ok(result.includes('description: Executes GSD plans'), result);
+    assert.ok(result.includes('name: wsf-executor'), result);
+    assert.ok(result.includes('description: Executes WSF plans'), result);
   });
 
   test('maps Claude tools to Gemini tool names', () => {
@@ -264,13 +264,13 @@ Execute plans from ~/.claude/get-shit-done/workflows/execute-phase.md
 
   test('applies path replacement in body', () => {
     const result = convertClaudeAgentToAntigravityAgent(claudeAgent, false);
-    assert.ok(result.includes('.agent/get-shit-done/'), result);
+    assert.ok(result.includes('.agent/wsf/'), result);
     assert.ok(!result.includes('~/.claude/'), result);
   });
 
   test('uses global path for global installs', () => {
     const result = convertClaudeAgentToAntigravityAgent(claudeAgent, true);
-    assert.ok(result.includes('~/.gemini/antigravity/get-shit-done/'), result);
+    assert.ok(result.includes('~/.gemini/antigravity/wsf/'), result);
   });
 
   test('excludes Task tool (filtered by convertGeminiToolName)', () => {
@@ -290,27 +290,27 @@ describe('copyCommandsAsAntigravitySkills', () => {
   let skillsDir;
 
   beforeEach(() => {
-    tmpDir = createTempDir('gsd-ag-test-');
-    srcDir = path.join(tmpDir, 'commands', 'gsd');
+    tmpDir = createTempDir('wsf-ag-test-');
+    srcDir = path.join(tmpDir, 'commands', 'wsf');
     skillsDir = path.join(tmpDir, 'skills');
     fs.mkdirSync(srcDir, { recursive: true });
 
     // Create a sample command file
     fs.writeFileSync(path.join(srcDir, 'new-project.md'), `---
-name: gsd:new-project
+name: wsf-new-project
 description: Initialize a new project
 allowed-tools:
   - Read
   - Write
 ---
-Run /gsd:new-project to start.
+Run /wsf-new-project to start.
 `);
 
     // Create a subdirectory command
     const subDir = path.join(srcDir, 'subdir');
     fs.mkdirSync(subDir, { recursive: true });
     fs.writeFileSync(path.join(subDir, 'sub-command.md'), `---
-name: gsd:sub-command
+name: wsf-sub-command
 description: A sub-command
 allowed-tools:
   - Read
@@ -324,57 +324,57 @@ Body text.
   });
 
   test('creates skills directory', () => {
-    copyCommandsAsAntigravitySkills(srcDir, skillsDir, 'gsd', false);
+    copyCommandsAsAntigravitySkills(srcDir, skillsDir, 'wsf', false);
     assert.ok(fs.existsSync(skillsDir));
   });
 
   test('creates one skill directory per command with SKILL.md', () => {
-    copyCommandsAsAntigravitySkills(srcDir, skillsDir, 'gsd', false);
-    const skillDir = path.join(skillsDir, 'gsd-new-project');
+    copyCommandsAsAntigravitySkills(srcDir, skillsDir, 'wsf', false);
+    const skillDir = path.join(skillsDir, 'wsf-new-project');
     assert.ok(fs.existsSync(skillDir), 'skill dir should exist');
     assert.ok(fs.existsSync(path.join(skillDir, 'SKILL.md')), 'SKILL.md should exist');
   });
 
   test('handles subdirectory commands with prefixed names', () => {
-    copyCommandsAsAntigravitySkills(srcDir, skillsDir, 'gsd', false);
-    const subSkillDir = path.join(skillsDir, 'gsd-subdir-sub-command');
+    copyCommandsAsAntigravitySkills(srcDir, skillsDir, 'wsf', false);
+    const subSkillDir = path.join(skillsDir, 'wsf-subdir-sub-command');
     assert.ok(fs.existsSync(subSkillDir), 'subdirectory skill dir should exist');
   });
 
   test('SKILL.md has minimal frontmatter (name + description only)', () => {
-    copyCommandsAsAntigravitySkills(srcDir, skillsDir, 'gsd', false);
-    const content = fs.readFileSync(path.join(skillsDir, 'gsd-new-project', 'SKILL.md'), 'utf8');
-    assert.ok(content.includes('name: gsd-new-project'), content);
+    copyCommandsAsAntigravitySkills(srcDir, skillsDir, 'wsf', false);
+    const content = fs.readFileSync(path.join(skillsDir, 'wsf-new-project', 'SKILL.md'), 'utf8');
+    assert.ok(content.includes('name: wsf-new-project'), content);
     assert.ok(content.includes('description: Initialize a new project'), content);
     assert.ok(!content.includes('allowed-tools'), content);
   });
 
   test('SKILL.md body has paths converted for local install', () => {
-    copyCommandsAsAntigravitySkills(srcDir, skillsDir, 'gsd', false);
-    const content = fs.readFileSync(path.join(skillsDir, 'gsd-new-project', 'SKILL.md'), 'utf8');
-    // gsd: → gsd- conversion
-    assert.ok(!content.includes('gsd:'), content);
+    copyCommandsAsAntigravitySkills(srcDir, skillsDir, 'wsf', false);
+    const content = fs.readFileSync(path.join(skillsDir, 'wsf-new-project', 'SKILL.md'), 'utf8');
+    // wsf- → wsf- conversion
+    assert.ok(!content.includes('wsf:'), content);
   });
 
-  test('removes old gsd-* skill dirs before reinstalling', () => {
+  test('removes old wsf-* skill dirs before reinstalling', () => {
     // Create a stale skill dir
-    const staleDir = path.join(skillsDir, 'gsd-old-skill');
+    const staleDir = path.join(skillsDir, 'wsf-old-skill');
     fs.mkdirSync(staleDir, { recursive: true });
     fs.writeFileSync(path.join(staleDir, 'SKILL.md'), '---\nname: old\n---\n');
 
-    copyCommandsAsAntigravitySkills(srcDir, skillsDir, 'gsd', false);
+    copyCommandsAsAntigravitySkills(srcDir, skillsDir, 'wsf', false);
 
     assert.ok(!fs.existsSync(staleDir), 'stale skill dir should be removed');
   });
 
-  test('does not remove non-gsd skill dirs', () => {
-    // Create a non-GSD skill dir
+  test('does not remove non-wsf skill dirs', () => {
+    // Create a non-WSF skill dir
     const otherDir = path.join(skillsDir, 'my-custom-skill');
     fs.mkdirSync(otherDir, { recursive: true });
 
-    copyCommandsAsAntigravitySkills(srcDir, skillsDir, 'gsd', false);
+    copyCommandsAsAntigravitySkills(srcDir, skillsDir, 'wsf', false);
 
-    assert.ok(fs.existsSync(otherDir), 'non-GSD skill dir should be preserved');
+    assert.ok(fs.existsSync(otherDir), 'non-WSF skill dir should be preserved');
   });
 });
 
@@ -384,17 +384,17 @@ describe('writeManifest (Antigravity)', () => {
   let tmpDir;
 
   beforeEach(() => {
-    tmpDir = createTempDir('gsd-manifest-ag-');
+    tmpDir = createTempDir('wsf-manifest-ag-');
     // Create minimal structure
-    const skillsDir = path.join(tmpDir, 'skills', 'gsd-help');
+    const skillsDir = path.join(tmpDir, 'skills', 'wsf-help');
     fs.mkdirSync(skillsDir, { recursive: true });
-    fs.writeFileSync(path.join(skillsDir, 'SKILL.md'), '---\nname: gsd-help\ndescription: Help\n---\n');
-    const gsdDir = path.join(tmpDir, 'get-shit-done');
-    fs.mkdirSync(gsdDir, { recursive: true });
-    fs.writeFileSync(path.join(gsdDir, 'VERSION'), '1.0.0');
+    fs.writeFileSync(path.join(skillsDir, 'SKILL.md'), '---\nname: wsf-help\ndescription: Help\n---\n');
+    const wsfDir = path.join(tmpDir, 'wsf');
+    fs.mkdirSync(wsfDir, { recursive: true });
+    fs.writeFileSync(path.join(wsfDir, 'VERSION'), '1.0.0');
     const agentsDir = path.join(tmpDir, 'agents');
     fs.mkdirSync(agentsDir, { recursive: true });
-    fs.writeFileSync(path.join(agentsDir, 'gsd-executor.md'), '---\nname: gsd-executor\n---\n');
+    fs.writeFileSync(path.join(agentsDir, 'wsf-executor.md'), '---\nname: wsf-executor\n---\n');
   });
 
   afterEach(() => {
@@ -403,7 +403,7 @@ describe('writeManifest (Antigravity)', () => {
 
   test('writes manifest JSON file', () => {
     writeManifest(tmpDir, 'antigravity');
-    const manifestPath = path.join(tmpDir, 'gsd-file-manifest.json');
+    const manifestPath = path.join(tmpDir, 'wsf-file-manifest.json');
     assert.ok(fs.existsSync(manifestPath), 'manifest file should exist');
     const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
     assert.ok(manifest.version, 'should have version');
@@ -412,14 +412,14 @@ describe('writeManifest (Antigravity)', () => {
 
   test('manifest includes skills in skills/ directory', () => {
     writeManifest(tmpDir, 'antigravity');
-    const manifest = JSON.parse(fs.readFileSync(path.join(tmpDir, 'gsd-file-manifest.json'), 'utf8'));
+    const manifest = JSON.parse(fs.readFileSync(path.join(tmpDir, 'wsf-file-manifest.json'), 'utf8'));
     const skillFiles = Object.keys(manifest.files).filter(f => f.startsWith('skills/'));
     assert.ok(skillFiles.length > 0, 'should have skill files in manifest');
   });
 
   test('manifest includes agent files', () => {
     writeManifest(tmpDir, 'antigravity');
-    const manifest = JSON.parse(fs.readFileSync(path.join(tmpDir, 'gsd-file-manifest.json'), 'utf8'));
+    const manifest = JSON.parse(fs.readFileSync(path.join(tmpDir, 'wsf-file-manifest.json'), 'utf8'));
     const agentFiles = Object.keys(manifest.files).filter(f => f.startsWith('agents/'));
     assert.ok(agentFiles.length > 0, 'should have agent files in manifest');
   });
