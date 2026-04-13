@@ -159,7 +159,7 @@
 const fs = require('fs');
 const path = require('path');
 const core = require('./lib/core.cjs');
-const { error, findProjectRoot, getActiveWorkstream } = core;
+const { error, findProjectRoot, getActiveWorkstream, resolveWorkspaceProject, parseProjectPhaseArgs } = core;
 const state = require('./lib/state.cjs');
 const phase = require('./lib/phase.cjs');
 const roadmap = require('./lib/roadmap.cjs');
@@ -330,6 +330,37 @@ async function main() {
   ]);
   if (!SKIP_ROOT_RESOLUTION.has(command)) {
     cwd = findProjectRoot(cwd);
+  }
+
+  if (command === 'init') {
+    const workflow = args[1];
+    let projectArg = null;
+    let phaseRequired = false;
+
+    if (workflow === 'new-project' || workflow === 'map-codebase' || workflow === 'progress') {
+      ({ project: projectArg } = parseProjectPhaseArgs(args.slice(2)));
+    }
+
+    if (workflow === 'plan-phase' || workflow === 'phase-op' || workflow === 'execute-phase' || workflow === 'verify-work') {
+      phaseRequired = true;
+      ({ project: projectArg } = parseProjectPhaseArgs(args.slice(2), { phaseRequired }));
+    }
+
+    if (projectArg) {
+      const target = resolveWorkspaceProject(process.cwd(), projectArg);
+      if (!target) {
+        error(`Unknown project: ${projectArg}`);
+      }
+      cwd = target;
+    } else {
+      const start = process.cwd();
+      const looksLikeWorkspaceRoot = fs.existsSync(path.join(start, 'projects'))
+        && fs.statSync(path.join(start, 'projects')).isDirectory()
+        && !fs.existsSync(path.join(start, '.planning'));
+      if (looksLikeWorkspaceRoot && (workflow === 'new-project' || workflow === 'map-codebase' || workflow === 'progress' || workflow === 'plan-phase' || workflow === 'phase-op' || workflow === 'execute-phase' || workflow === 'verify-work')) {
+        error(`Project argument required when running ${workflow} from workspace root`);
+      }
+    }
   }
 
   // When --pick is active, intercept stdout to extract the requested field.

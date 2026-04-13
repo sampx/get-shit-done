@@ -149,6 +149,70 @@ function findProjectRoot(startDir) {
   return startDir;
 }
 
+function extractProjectToken(arg) {
+  if (!arg) return null;
+  const token = String(arg).trim();
+  if (!token || token.startsWith('--') || token.startsWith('@')) return null;
+  if (/^[0-9]+(?:\.[0-9]+)?$/.test(token)) return null;
+  return token;
+}
+
+function resolveWorkspaceProject(startDir, projectArg) {
+  const token = extractProjectToken(projectArg);
+  if (!token) return null;
+
+  const resolved = path.resolve(startDir);
+  const root = path.parse(resolved).root;
+  const home = require('os').homedir();
+  let dir = resolved;
+
+  while (true) {
+    const candidate = path.join(dir, 'projects', token);
+    if (fs.existsSync(candidate) && fs.statSync(candidate).isDirectory()) {
+      return candidate;
+    }
+    if (dir === root || dir === home) break;
+    const parent = path.dirname(dir);
+    if (parent === dir) break;
+    dir = parent;
+  }
+
+  return null;
+}
+
+function parseProjectPhaseArgs(args = [], options = {}) {
+  const { phaseRequired = false } = options;
+  let phase = null;
+  let project = null;
+  const positional = [];
+
+  for (let i = 0; i < args.length; i++) {
+    const arg = args[i];
+    if (!arg || arg.startsWith('--')) {
+      if (arg === '--prd') i++;
+      if (arg === '--wave') i++;
+      continue;
+    }
+    positional.push(arg);
+  }
+
+  if (phaseRequired) {
+    phase = positional[0] || null;
+    project = extractProjectToken(positional[1]);
+  } else {
+    const first = positional[0] || null;
+    const second = positional[1] || null;
+    if (first && /^[0-9]+(?:\.[0-9]+)?$/.test(first)) {
+      phase = first;
+      project = extractProjectToken(second);
+    } else {
+      project = extractProjectToken(first);
+    }
+  }
+
+  return { phase, project };
+}
+
 // ─── Output helpers ───────────────────────────────────────────────────────────
 
 /**
@@ -1566,6 +1630,8 @@ module.exports = {
   toPosixPath,
   extractOneLinerFromBody,
   resolveWorktreeRoot,
+  resolveWorkspaceProject,
+  parseProjectPhaseArgs,
   withPlanningLock,
   findProjectRoot,
   detectSubRepos,

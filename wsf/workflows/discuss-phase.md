@@ -138,7 +138,7 @@ Text mode applies to ALL workflows in the session, not just discuss-phase.
 Phase number from argument (required).
 
 ```bash
-INIT=$(node "$HOME/.claude/wsf/bin/wsf-tools.cjs" init phase-op "${PHASE}")
+INIT=$(node "$HOME/.claude/wsf/bin/wsf-tools.cjs" init phase-op ${ARGUMENTS})
 if [[ "$INIT" == @file:* ]]; then INIT=$(cat "${INIT#@file:}"); fi
 AGENT_SKILLS_ADVISOR=$(node "$HOME/.claude/wsf/bin/wsf-tools.cjs" agent-skills wsf-advisor 2>/dev/null)
 ```

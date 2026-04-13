@@ -1,7 +1,7 @@
 ---
 name: wsf-map-codebase
 description: Analyze codebase with parallel mapper agents to produce .planning/codebase/ documents
-argument-hint: "[optional: specific area to map, e.g., 'api' or 'auth']"
+argument-hint: "[project] [optional: focus area]"
 allowed-tools:
   - Read
   - Bash
@@ -24,7 +24,11 @@ Output: .planning/codebase/ folder with 7 structured documents about the codebas
 </execution_context>
 
 <context>
-Focus area: $ARGUMENTS (optional - if provided, tells agents to focus on specific subsystem)
+Project:
+- Optional first positional argument may be a target project name (for WopalSpace-style workspaces), e.g. `space-flow`
+
+Focus area:
+- Remaining positional argument, if provided, tells agents to focus on a specific subsystem
 
 **Load project state if exists:**
 Check for .planning/STATE.md - loads context if project already initialized

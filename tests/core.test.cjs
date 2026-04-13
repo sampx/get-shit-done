@@ -29,6 +29,8 @@ const {
   searchPhaseInDir,
   findPhaseInternal,
   findProjectRoot,
+  resolveWorkspaceProject,
+  parseProjectPhaseArgs,
   detectSubRepos,
   planningDir,
 } = require('../wsf/bin/lib/core.cjs');
@@ -1623,6 +1625,46 @@ describe('findProjectRoot', () => {
     fs.mkdirSync(deepDir, { recursive: true });
 
     assert.strictEqual(findProjectRoot(deepDir), childRepo);
+  });
+});
+
+describe('resolveWorkspaceProject', () => {
+  let workspaceRoot;
+
+  beforeEach(() => {
+    workspaceRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'wsf-workspace-test-'));
+    fs.mkdirSync(path.join(workspaceRoot, 'projects', 'space-flow'), { recursive: true });
+  });
+
+  afterEach(() => {
+    fs.rmSync(workspaceRoot, { recursive: true, force: true });
+  });
+
+  test('resolves projects/<name> from workspace root', () => {
+    const result = resolveWorkspaceProject(workspaceRoot, 'space-flow');
+    assert.strictEqual(result, path.join(workspaceRoot, 'projects', 'space-flow'));
+  });
+
+  test('returns null for unknown project', () => {
+    const result = resolveWorkspaceProject(workspaceRoot, 'missing');
+    assert.strictEqual(result, null);
+  });
+});
+
+describe('parseProjectPhaseArgs', () => {
+  test('parses project-only arguments', () => {
+    const result = parseProjectPhaseArgs(['space-flow']);
+    assert.deepStrictEqual(result, { phase: null, project: 'space-flow' });
+  });
+
+  test('parses phase + project arguments', () => {
+    const result = parseProjectPhaseArgs(['1', 'space-flow'], { phaseRequired: true });
+    assert.deepStrictEqual(result, { phase: '1', project: 'space-flow' });
+  });
+
+  test('ignores flags and prd path when parsing project', () => {
+    const result = parseProjectPhaseArgs(['1', 'space-flow', '--prd', 'docs/prd.md'], { phaseRequired: true });
+    assert.deepStrictEqual(result, { phase: '1', project: 'space-flow' });
   });
 });
 

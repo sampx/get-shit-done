@@ -65,7 +65,7 @@ If `--wave` is absent, preserve the current behavior of executing all incomplete
 Load all context in one call:
 
 ```bash
-INIT=$(node "$HOME/.claude/wsf/bin/wsf-tools.cjs" init execute-phase "${PHASE_ARG}")
+INIT=$(node "$HOME/.claude/wsf/bin/wsf-tools.cjs" init execute-phase ${ARGUMENTS})
 if [[ "$INIT" == @file:* ]]; then INIT=$(cat "${INIT#@file:}"); fi
 AGENT_SKILLS=$(node "$HOME/.claude/wsf/bin/wsf-tools.cjs" agent-skills wsf-executor 2>/dev/null)
 ```

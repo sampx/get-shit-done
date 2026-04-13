@@ -1,7 +1,7 @@
 ---
 name: wsf-discuss-phase
 description: Gather phase context through adaptive questioning before planning. Use --auto to skip interactive questions (Claude picks recommended defaults). Use --chain for interactive discuss followed by automatic plan+execute. Use --power for bulk question generation into a file-based UI (answer at your own pace).
-argument-hint: "<phase> [--auto] [--chain] [--batch] [--analyze] [--text] [--power]"
+argument-hint: "<phase> [project] [--auto] [--chain] [--batch] [--analyze] [--text] [--power]"
 allowed-tools:
   - Read
   - Write
@@ -40,7 +40,8 @@ Extract implementation decisions that downstream agents need — researcher and 
 </runtime_note>
 
 <context>
-Phase number: $ARGUMENTS (required)
+Phase number: first positional argument (required)
+Project: optional second positional argument, e.g. `space-flow`
 
 Context files are resolved in-workflow using `init phase-op` and roadmap/state tool calls.
 </context>

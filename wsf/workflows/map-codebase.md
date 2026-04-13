@@ -31,7 +31,7 @@ Documents are reference material for Claude when planning/executing. Always incl
 Load codebase mapping context:
 
 ```bash
-INIT=$(node "$HOME/.claude/wsf/bin/wsf-tools.cjs" init map-codebase)
+INIT=$(node "$HOME/.claude/wsf/bin/wsf-tools.cjs" init map-codebase $ARGUMENTS)
 if [[ "$INIT" == @file:* ]]; then INIT=$(cat "${INIT#@file:}"); fi
 AGENT_SKILLS_MAPPER=$(node "$HOME/.claude/wsf/bin/wsf-tools.cjs" agent-skills wsf-codebase-mapper 2>/dev/null)
 ```

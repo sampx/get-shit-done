@@ -1,7 +1,7 @@
 ---
 name: wsf-plan-phase
 description: Create detailed phase plan (PLAN.md) with verification loop
-argument-hint: "[phase] [--auto] [--research] [--skip-research] [--gaps] [--skip-verify] [--prd <file>] [--reviews] [--text]"
+argument-hint: "[phase] [project] [--auto] [--research] [--skip-research] [--gaps] [--skip-verify] [--prd <file>] [--reviews] [--text]"
 agent: wsf-planner
 allowed-tools:
   - Read
@@ -32,7 +32,8 @@ Create executable phase prompts (PLAN.md files) for a roadmap phase with integra
 </runtime_note>
 
 <context>
-Phase number: $ARGUMENTS (optional — auto-detects next unplanned phase if omitted)
+Phase number: first positional argument (optional — auto-detects next unplanned phase if omitted)
+Project: optional positional project name, e.g. `space-flow`
 
 **Flags:**
 - `--research` — Force re-research even if RESEARCH.md exists

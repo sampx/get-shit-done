@@ -193,6 +193,17 @@ wsf-tools websearch <query> [--limit N]      # Brave API 搜索
 - process 通过 `@path` 引用 workflow 文件
 - 命令通过 `/wsf-xxx` 在目标 runtime 中触发
 
+#### WopalSpace 多项目空间约定
+
+- 在 WopalSpace 这类多项目工作空间中，关键入口命令支持显式项目参数，例如：
+  - `/wsf-map-codebase space-flow`
+  - `/wsf-new-project space-flow`
+  - `/wsf-discuss-phase 1 space-flow`
+  - `/wsf-plan-phase 1 space-flow`
+- 项目参数当前解析为 `projects/<name>/` 形态的子项目目录
+- 当命令在工作空间根目录运行，且当前目录存在 `projects/` 但不存在 `.planning/` 时，`new-project` / `map-codebase` / `progress` / `phase-op` / `plan-phase` / `execute-phase` / `verify-work` 必须要求显式项目参数，禁止默认把工作空间根目录当作项目根
+- 这类命令的 workflow 必须通过 `wsf-tools.cjs init ...` 吃到完整参数，并由工具层解析目标项目；不要在 workflow 内部自行猜测项目根
+
 ### 4.3 Agent 系统 (`agents/*.md`)
 
 - 11 个 specialized agent，每个有 YAML frontmatter（name、description、tools、color）
@@ -208,6 +219,12 @@ wsf-tools websearch <query> [--limit N]      # Brave API 搜索
   - `PLAN.md` — XML 结构化任务计划
   - `SUMMARY.md` — 执行结果
   - `CONTEXT.md` — 用户决策上下文
+
+#### 项目根解析职责
+
+- `findProjectRoot()` 的职责是：从已知项目目录或其子目录向上解析 `.planning/` 所属项目根
+- “空间项目名 → 项目目录”的解析属于独立职责，由 `wsf-tools.cjs` + `core.cjs` 的共享 helper 处理，不应把这层语义硬塞进 `findProjectRoot()`
+- 对于 WopalSpace 多项目空间，`init` 子命令先解析目标项目，再进入 `findProjectRoot()` / `loadConfig()` / `init.cjs` 逻辑
 
 ### 4.5 模型配置
 
@@ -239,6 +256,7 @@ npm run test:coverage   # 测试 + 覆盖率（≥70% lines）
 - 文件：`tests/*.test.cjs`
 - 覆盖率：c8（`wsf/bin/lib/*.cjs`，阈值 70% lines）
 - 运行器：`scripts/run-tests.cjs`（跨平台，自动发现测试文件）
+- 涉及项目根解析、多项目空间支持、`--cwd` 透传时，至少更新：`tests/core.test.cjs`、`tests/init.test.cjs`、`tests/dispatcher.test.cjs`
 
 ### 本地测试安装
 

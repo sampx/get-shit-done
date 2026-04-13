@@ -996,6 +996,30 @@ describe('cmdInitMapCodebase', () => {
     assert.ok(withoutLine, 'workflow should have a line about Task tool NOT being available');
     assert.ok(!withoutLine.includes('OpenCode'), 'OpenCode must NOT be listed under runtimes WITHOUT Task tool');
   });
+
+  test('workspace root + project arg resolves to target project for map-codebase', () => {
+    const workspaceRoot = path.join(tmpDir, 'workspace');
+    const target = path.join(workspaceRoot, 'projects', 'space-flow');
+    fs.mkdirSync(path.join(target, '.planning', 'codebase'), { recursive: true });
+    fs.writeFileSync(path.join(target, '.planning', 'codebase', 'STACK.md'), '# Stack');
+
+    const result = runWsfTools('init map-codebase space-flow', workspaceRoot);
+    assert.ok(result.success, `Command failed: ${result.error}`);
+
+    const output = JSON.parse(result.output);
+    assert.strictEqual(fs.realpathSync(output.project_root), fs.realpathSync(target));
+    assert.strictEqual(output.has_maps, true);
+  });
+
+  test('workspace root without project arg fails fast for map-codebase', () => {
+    const workspaceRoot = path.join(tmpDir, 'workspace');
+    fs.mkdirSync(workspaceRoot, { recursive: true });
+    fs.mkdirSync(path.join(workspaceRoot, 'projects'), { recursive: true });
+
+    const result = runWsfTools('init map-codebase', workspaceRoot);
+    assert.strictEqual(result.success, false);
+    assert.ok(result.error.includes('Project argument required'), result.error);
+  });
 });
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -1136,6 +1160,31 @@ describe('cmdInitNewProject', () => {
     const output = JSON.parse(result.output);
     assert.strictEqual(output.has_existing_code, true);
     assert.strictEqual(output.is_brownfield, true);
+  });
+
+  test('workspace root + project arg resolves to target brownfield project', () => {
+    const workspaceRoot = path.join(tmpDir, 'workspace');
+    const target = path.join(workspaceRoot, 'projects', 'space-flow');
+    fs.mkdirSync(path.join(target, '.planning'), { recursive: true });
+    fs.writeFileSync(path.join(target, 'package.json'), '{"name":"space-flow"}');
+
+    const result = runWsfTools('init new-project space-flow', workspaceRoot);
+    assert.ok(result.success, `Command failed: ${result.error}`);
+
+    const output = JSON.parse(result.output);
+    assert.strictEqual(fs.realpathSync(output.project_root), fs.realpathSync(target));
+    assert.strictEqual(output.has_package_file, true);
+    assert.strictEqual(output.is_brownfield, true);
+  });
+
+  test('workspace root without project arg fails fast for new-project', () => {
+    const workspaceRoot = path.join(tmpDir, 'workspace');
+    fs.mkdirSync(workspaceRoot, { recursive: true });
+    fs.mkdirSync(path.join(workspaceRoot, 'projects'), { recursive: true });
+
+    const result = runWsfTools('init new-project', workspaceRoot);
+    assert.strictEqual(result.success, false);
+    assert.ok(result.error.includes('Project argument required'), result.error);
   });
 });
 

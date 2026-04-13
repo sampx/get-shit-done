@@ -1,7 +1,7 @@
 ---
 name: wsf-new-project
 description: Initialize a new project with deep context gathering and PROJECT.md
-argument-hint: "[--auto]"
+argument-hint: "[project] [--auto]"
 allowed-tools:
   - Read
   - Bash
@@ -14,6 +14,9 @@ allowed-tools:
 </runtime_note>
 
 <context>
+**Project:**
+- Optional first positional argument may be a target project name (for WopalSpace-style workspaces), e.g. `space-flow`
+
 **Flags:**
 - `--auto` — Automatic mode. After config questions, runs research → requirements → roadmap without further interaction. Expects idea document via @ reference.
 </context>

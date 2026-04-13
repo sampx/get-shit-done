@@ -57,7 +57,7 @@ The document should describe what you want to build.
 **MANDATORY FIRST STEP — Execute these checks before ANY user interaction:**
 
 ```bash
-INIT=$(node "$HOME/.claude/wsf/bin/wsf-tools.cjs" init new-project)
+INIT=$(node "$HOME/.claude/wsf/bin/wsf-tools.cjs" init new-project $ARGUMENTS)
 if [[ "$INIT" == @file:* ]]; then INIT=$(cat "${INIT#@file:}"); fi
 AGENT_SKILLS_RESEARCHER=$(node "$HOME/.claude/wsf/bin/wsf-tools.cjs" agent-skills wsf-project-researcher 2>/dev/null)
 AGENT_SKILLS_SYNTHESIZER=$(node "$HOME/.claude/wsf/bin/wsf-tools.cjs" agent-skills wsf-synthesizer 2>/dev/null)

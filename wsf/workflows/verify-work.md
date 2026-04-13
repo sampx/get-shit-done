@@ -30,7 +30,7 @@ No Pass/Fail buttons. No severity questions. Just: "Here's what should happen. D
 If $ARGUMENTS contains a phase number, load context:
 
 ```bash
-INIT=$(node "$HOME/.claude/wsf/bin/wsf-tools.cjs" init verify-work "${PHASE_ARG}")
+INIT=$(node "$HOME/.claude/wsf/bin/wsf-tools.cjs" init verify-work ${ARGUMENTS})
 if [[ "$INIT" == @file:* ]]; then INIT=$(cat "${INIT#@file:}"); fi
 AGENT_SKILLS_PLANNER=$(node "$HOME/.claude/wsf/bin/wsf-tools.cjs" agent-skills wsf-planner 2>/dev/null)
 AGENT_SKILLS_CHECKER=$(node "$HOME/.claude/wsf/bin/wsf-tools.cjs" agent-skills wsf-checker 2>/dev/null)

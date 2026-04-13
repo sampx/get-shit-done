@@ -1,7 +1,7 @@
 ---
 name: wsf-execute-phase
 description: Execute all plans in a phase with wave-based parallelization
-argument-hint: "<phase-number> [--wave N] [--gaps-only] [--interactive]"
+argument-hint: "<phase-number> [project] [--wave N] [--gaps-only] [--interactive]"
 allowed-tools:
   - Read
   - Write
@@ -40,7 +40,8 @@ Context budget: ~15% orchestrator, 100% fresh per subagent.
 </runtime_note>
 
 <context>
-Phase: $ARGUMENTS
+Phase: first positional argument
+Project: optional second positional argument, e.g. `space-flow`
 
 **Available optional flags (documentation only — not automatically active):**
 - `--wave N` — Execute only Wave `N` in the phase. Use when you want to pace execution or stay inside usage limits.

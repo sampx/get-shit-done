@@ -1,7 +1,7 @@
 ---
 name: wsf-verify-work
 description: Validate built features through conversational UAT
-argument-hint: "[phase number, e.g., '4']"
+argument-hint: "[phase number] [project]"
 allowed-tools:
   - Read
   - Bash
@@ -25,7 +25,8 @@ Output: {phase_num}-UAT.md tracking all test results. If issues found: diagnosed
 </execution_context>
 
 <context>
-Phase: $ARGUMENTS (optional)
+Phase: first positional argument (optional)
+Project: optional second positional argument, e.g. `space-flow`
 - If provided: Test specific phase (e.g., "4")
 - If not provided: Check for active sessions or prompt for phase
 

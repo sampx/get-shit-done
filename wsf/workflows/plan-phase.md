@@ -26,7 +26,7 @@ Valid WSF subagent types (use exact names — do not fall back to 'general-purpo
 Load all context in one call (paths only to minimize orchestrator context):
 
 ```bash
-INIT=$(node "$HOME/.claude/wsf/bin/wsf-tools.cjs" init plan-phase "$PHASE")
+INIT=$(node "$HOME/.claude/wsf/bin/wsf-tools.cjs" init plan-phase $ARGUMENTS)
 if [[ "$INIT" == @file:* ]]; then INIT=$(cat "${INIT#@file:}"); fi
 AGENT_SKILLS_RESEARCHER=$(node "$HOME/.claude/wsf/bin/wsf-tools.cjs" agent-skills wsf-researcher 2>/dev/null)
 AGENT_SKILLS_PLANNER=$(node "$HOME/.claude/wsf/bin/wsf-tools.cjs" agent-skills wsf-planner 2>/dev/null)

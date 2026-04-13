@@ -66,6 +66,30 @@ describe('dispatcher error paths', () => {
     assert.ok(result.error.includes('Invalid --cwd'), `Expected "Invalid --cwd" in stderr, got: ${result.error}`);
   });
 
+  test('init progress from workspace root requires project argument', () => {
+    const workspaceRoot = path.join(tmpDir, 'workspace');
+    fs.mkdirSync(workspaceRoot, { recursive: true });
+    fs.mkdirSync(path.join(workspaceRoot, 'projects'), { recursive: true });
+
+    const result = runWsfTools('init progress', workspaceRoot);
+    assert.strictEqual(result.success, false, 'Should exit non-zero');
+    assert.ok(result.error.includes('Project argument required'), `Expected project argument error, got: ${result.error}`);
+  });
+
+  test('init phase-op from workspace root resolves project argument', () => {
+    const workspaceRoot = path.join(tmpDir, 'workspace');
+    const target = path.join(workspaceRoot, 'projects', 'space-flow');
+    const phaseDir = path.join(target, '.planning', 'phases', '01-foundation');
+    fs.mkdirSync(phaseDir, { recursive: true });
+    fs.writeFileSync(path.join(target, '.planning', 'ROADMAP.md'), '# Roadmap\n');
+    fs.writeFileSync(path.join(target, '.planning', 'STATE.md'), '# State\n');
+
+    const result = runWsfTools('init phase-op 1 space-flow', workspaceRoot);
+    assert.strictEqual(result.success, true, result.error);
+    const output = JSON.parse(result.output);
+    assert.strictEqual(fs.realpathSync(output.project_root), fs.realpathSync(target));
+  });
+
   // Unknown subcommand: template
   test('template unknown subcommand errors', () => {
     const result = runWsfTools('template bogus', tmpDir);
