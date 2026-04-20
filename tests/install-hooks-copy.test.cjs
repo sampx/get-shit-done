@@ -31,7 +31,7 @@ const EXPECTED_SH_HOOKS = [
 
 // All hooks that should be in hooks/dist/ after build
 const EXPECTED_ALL_HOOKS = [
-  'wsf-check-update.js',
+  'wsf-context-monitor.js',
   'wsf-context-monitor.js',
   'wsf-prompt-guard.js',
   'wsf-read-guard.js',
@@ -155,24 +155,6 @@ describe('install.js source correctness', () => {
     );
   });
 
-  test('Codex hook uses correct filename wsf-check-update.js (not wsf-update-check.js)', () => {
-    // The cache file wsf-update-check.json is legitimate (different artifact);
-    // check that no hook registration uses the inverted .js filename.
-    // Match the exact pattern: quote + wsf-update-check.js + quote
-    assert.ok(
-      !src.match(/['"]wsf-update-check\.js['"]/),
-      'install.js must not reference the inverted hook name wsf-update-check.js in quotes'
-    );
-  });
-
-  test('Codex hook path does not use wsf/hooks/ subdirectory', () => {
-    // The Codex hook should resolve to targetDir/hooks/, not targetDir/wsf/hooks/
-    assert.ok(
-      !src.includes("'wsf', 'hooks', 'wsf-check-update"),
-      'Codex hook should not use wsf/hooks/ path segment'
-    );
-  });
-
   test('cache invalidation uses ~/.cache/wsf/ path', () => {
     assert.ok(
       src.includes("os.homedir(), '.cache', 'wsf'"),
@@ -197,20 +179,17 @@ describe('install.js source correctness', () => {
     );
   });
 
-  test('phantom wsf-check-update.sh is not in uninstall hook list', () => {
-    const wsfHooksMatch = src.match(/const wsfHooks\s*=\s*\[([^\]]+)\]/);
-    assert.ok(wsfHooksMatch, 'wsfHooks array should exist');
-    const wsfHooksContent = wsfHooksMatch[1];
+  test('cache invalidation no longer references update cache', () => {
     assert.ok(
-      !wsfHooksContent.includes('wsf-check-update.sh'),
-      'wsfHooks should not include phantom wsf-check-update.sh'
+      !src.includes("'.cache', 'wsf', 'wsf-update-check.json'"),
+      'install.js should not clear wsf update cache'
     );
   });
 
   test('isGsdHookCommand covers all WSF hook names', () => {
     // The consolidated uninstall cleanup uses isGsdHookCommand — verify all hook names are present
     const expectedHookNames = [
-      'wsf-check-update', 'wsf-statusline', 'wsf-session-state',
+      'wsf-statusline', 'wsf-session-state',
       'wsf-context-monitor', 'wsf-phase-boundary', 'wsf-prompt-guard',
       'wsf-read-guard', 'wsf-validate-commit', 'wsf-workflow-guard',
     ];
@@ -222,10 +201,11 @@ describe('install.js source correctness', () => {
     }
   });
 
-  test('Codex install migrates legacy wsf-update-check entries', () => {
+  test('Codex install no longer references update-check', () => {
+    // The old wsf-update-check migration has been removed
     assert.ok(
-      src.includes('wsf-update-check'),
-      'install.js should detect legacy wsf-update-check entries for migration'
+      !src.includes("wsf-check-update"),
+      'install.js should not reference wsf-check-update'
     );
   });
 
@@ -315,7 +295,7 @@ describe('writeManifest includes .sh hooks', () => {
 describe('uninstall settings cleanup preserves user hooks', () => {
   // Mirror the isGsdHookCommand logic from install.js
   const isGsdHookCommand = (cmd) =>
-    cmd && (cmd.includes('wsf-check-update') || cmd.includes('wsf-statusline') ||
+    cmd && (cmd.includes('wsf-statusline') ||
       cmd.includes('wsf-session-state') || cmd.includes('wsf-context-monitor') ||
       cmd.includes('wsf-phase-boundary') || cmd.includes('wsf-prompt-guard') ||
       cmd.includes('wsf-read-guard') || cmd.includes('wsf-validate-commit') ||
@@ -350,8 +330,8 @@ describe('uninstall settings cleanup preserves user hooks', () => {
   test('entry with only WSF hooks is fully removed', () => {
     const entries = [{
       hooks: [
-        { type: 'command', command: 'node /path/to/wsf-check-update.js' },
         { type: 'command', command: 'node /path/to/wsf-statusline.js' },
+        { type: 'command', command: 'node /path/to/wsf-prompt-guard.js' },
       ],
     }];
 
@@ -387,7 +367,6 @@ describe('uninstall settings cleanup preserves user hooks', () => {
 
   test('all WSF hook names are recognized by isGsdHookCommand', () => {
     const wsfCommands = [
-      'node /path/wsf-check-update.js',
       'node /path/wsf-statusline.js',
       'bash /path/wsf-session-state.sh',
       'node /path/wsf-context-monitor.js',
@@ -401,55 +380,5 @@ describe('uninstall settings cleanup preserves user hooks', () => {
     for (const cmd of wsfCommands) {
       assert.ok(isGsdHookCommand(cmd), `should recognize: ${cmd}`);
     }
-  });
-});
-
-// ─────────────────────────────────────────────────────────────────────────────
-// 5. Codex legacy migration
-// ─────────────────────────────────────────────────────────────────────────────
-
-describe('Codex legacy wsf-update-check migration', () => {
-  test('install.js strips legacy wsf-update-check hook blocks from config', () => {
-    const src = fs.readFileSync(INSTALL_SRC, 'utf-8');
-    assert.ok(
-      src.includes('wsf-update-check') && src.includes('replace('),
-      'install.js should have migration logic to strip legacy wsf-update-check entries'
-    );
-  });
-
-  test('migration regex removes LF legacy hook block', () => {
-    const legacyBlock = [
-      '[features]',
-      'codex_hooks = true',
-      '',
-      '# WSF Hooks',
-      '[[hooks]]',
-      'event = "SessionStart"',
-      'command = "node /old/path/wsf-update-check.js"',
-      '',
-    ].join('\n');
-
-    let content = legacyBlock;
-    content = content.replace(/\n# WSF Hooks\n\[\[hooks\]\]\nevent = "SessionStart"\ncommand = "node [^\n]*wsf-update-check\.js"\n/g, '\n');
-    assert.ok(!content.includes('wsf:update-check'), 'legacy hook block should be removed');
-    assert.ok(content.includes('[features]'), 'non-hook content should be preserved');
-  });
-
-  test('migration regex removes CRLF legacy hook block', () => {
-    const legacyBlock = [
-      '[features]',
-      'codex_hooks = true',
-      '',
-      '# WSF Hooks',
-      '[[hooks]]',
-      'event = "SessionStart"',
-      'command = "node /old/path/wsf-update-check.js"',
-      '',
-    ].join('\r\n');
-
-    let content = legacyBlock;
-    content = content.replace(/\r\n# WSF Hooks\r\n\[\[hooks\]\]\r\nevent = "SessionStart"\r\ncommand = "node [^\r\n]*wsf-update-check\.js"\r\n/g, '\r\n');
-    assert.ok(!content.includes('wsf:update-check'), 'legacy CRLF hook block should be removed');
-    assert.ok(content.includes('[features]'), 'non-hook content should be preserved');
   });
 });

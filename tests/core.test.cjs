@@ -1041,14 +1041,13 @@ describe('normalizeMd', () => {
 describe('stale hook filter', () => {
   test('filter should only match wsf-prefixed .js files', () => {
     const files = [
-      'wsf-check-update.js',
       'wsf-context-monitor.js',
       'wsf-prompt-guard.js',
       'wsf-statusline.js',
       'wsf-workflow-guard.js',
       'guard-edits-outside-project.js',  // user hook
       'my-custom-hook.js',               // user hook
-      'wsf-check-update.js.bak',         // backup file
+      'wsf-context-monitor.js.bak',      // backup file
       'README.md',                       // non-js file
     ];
 
@@ -1056,7 +1055,6 @@ describe('stale hook filter', () => {
     const filtered = files.filter(wsfFilter);
 
     assert.deepStrictEqual(filtered, [
-      'wsf-check-update.js',
       'wsf-context-monitor.js',
       'wsf-prompt-guard.js',
       'wsf-statusline.js',
@@ -1065,61 +1063,6 @@ describe('stale hook filter', () => {
 
     assert.ok(!filtered.includes('guard-edits-outside-project.js'), 'must not include user hooks');
     assert.ok(!filtered.includes('my-custom-hook.js'), 'must not include non-wsf hooks');
-  });
-});
-
-// ─── stale hook path regression (#1249) ──────────────────────────────────────
-
-describe('stale hook path', () => {
-  test('wsf-check-update.js checks configDir/hooks/ where hooks are actually installed (#1421)', () => {
-    const content = fs.readFileSync(
-      path.join(__dirname, '..', 'hooks', 'wsf-check-update.js'), 'utf-8'
-    );
-    // Hooks are installed at configDir/hooks/ (e.g. ~/.claude/hooks/),
-    // not configDir/wsf/hooks/ which doesn't exist (#1421)
-    assert.ok(
-      content.includes("path.join(configDir, 'hooks')"),
-      'stale hook check must look in configDir/hooks/ where hooks are actually installed'
-    );
-  });
-});
-
-// ─── shared cache directory regression (#1421) ─────────────────────────────────
-
-describe('shared cache directory (#1421)', () => {
-  test('wsf-check-update.js writes cache to shared ~/.cache/wsf/ directory', () => {
-    const content = fs.readFileSync(
-      path.join(__dirname, '..', 'hooks', 'wsf-check-update.js'), 'utf-8'
-    );
-    // Cache must use a tool-agnostic path so statusline can find it
-    // regardless of which runtime (Claude, Gemini, OpenCode) ran the check
-    assert.ok(
-      content.includes("path.join(homeDir, '.cache', 'wsf')"),
-      'check-update must write cache to ~/.cache/wsf/ (shared, tool-agnostic)'
-    );
-  });
-
-  test('wsf-statusline.js checks shared cache first, falls back to legacy (#1421)', () => {
-    const content = fs.readFileSync(
-      path.join(__dirname, '..', 'hooks', 'wsf-statusline.js'), 'utf-8'
-    );
-    // Statusline must check the shared cache path first
-    assert.ok(
-      content.includes("path.join(homeDir, '.cache', 'wsf', 'wsf-update-check.json')"),
-      'statusline must check shared cache at ~/.cache/wsf/wsf-update-check.json'
-    );
-    // Must fall back to legacy runtime-specific cache for backward compat
-    assert.ok(
-      content.includes("path.join(claudeDir, 'cache', 'wsf-update-check.json')"),
-      'statusline must fall back to legacy cache at claudeDir/cache/wsf-update-check.json'
-    );
-    // Shared cache must be checked before legacy (existsSync order matters)
-    const sharedIdx = content.indexOf('sharedCacheFile');
-    const legacyIdx = content.indexOf('legacyCacheFile');
-    assert.ok(
-      sharedIdx < legacyIdx,
-      'shared cache must be defined and checked before legacy cache'
-    );
   });
 });
 
