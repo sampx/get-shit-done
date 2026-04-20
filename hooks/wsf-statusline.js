@@ -94,31 +94,12 @@ process.stdin.on('end', () => {
       }
     }
 
-    // WSF update available?
-    // Check shared cache first (#1421), fall back to runtime-specific cache for
-    // backward compatibility with older wsf-check-update.js versions.
-    let wsfUpdate = '';
-    const sharedCacheFile = path.join(homeDir, '.cache', 'wsf', 'wsf-update-check.json');
-    const legacyCacheFile = path.join(claudeDir, 'cache', 'wsf-update-check.json');
-    const cacheFile = fs.existsSync(sharedCacheFile) ? sharedCacheFile : legacyCacheFile;
-    if (fs.existsSync(cacheFile)) {
-      try {
-        const cache = JSON.parse(fs.readFileSync(cacheFile, 'utf8'));
-        if (cache.update_available) {
-          wsfUpdate = '\x1b[33m⬆ /wsf-update\x1b[0m │ ';
-        }
-        if (cache.stale_hooks && cache.stale_hooks.length > 0) {
-          wsfUpdate += '\x1b[31m⚠ stale hooks — run /wsf-update\x1b[0m │ ';
-        }
-      } catch (e) {}
-    }
-
     // Output
     const dirname = path.basename(dir);
     if (task) {
-      process.stdout.write(`${wsfUpdate}\x1b[2m${model}\x1b[0m │ \x1b[1m${task}\x1b[0m │ \x1b[2m${dirname}\x1b[0m${ctx}`);
+      process.stdout.write(`\x1b[2m${model}\x1b[0m │ \x1b[1m${task}\x1b[0m │ \x1b[2m${dirname}\x1b[0m${ctx}`);
     } else {
-      process.stdout.write(`${wsfUpdate}\x1b[2m${model}\x1b[0m │ \x1b[2m${dirname}\x1b[0m${ctx}`);
+      process.stdout.write(`\x1b[2m${model}\x1b[0m │ \x1b[2m${dirname}\x1b[0m${ctx}`);
     }
   } catch (e) {
     // Silent fail - don't break statusline on parse errors
