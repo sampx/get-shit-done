@@ -40,9 +40,7 @@
   - [Codebase Mapping](#27-codebase-mapping)
 - [Utility Features](#utility-features)
   - [Debug System](#28-debug-system)
-  - [Todo Management](#29-todo-management)
   - [Statistics Dashboard](#30-statistics-dashboard)
-  - [Update System](#31-update-system)
   - [Settings Management](#32-settings-management)
   - [Test Generation](#33-test-generation)
 - [Infrastructure Features](#infrastructure-features)
@@ -118,7 +116,6 @@
   - [Playwright-MCP UI Verification](#81-playwright-mcp-ui-verification)
   - [Pause-Work Expansion](#82-pause-work-expansion)
   - [Response Language Config](#83-response-language-config)
-  - [Manual Update Procedure](#84-manual-update-procedure)
   - [New Runtime Support (Trae, Cline, Augment Code)](#85-new-runtime-support-trae-cline-augment-code)
   - [Autonomous `--interactive` Flag](#86-autonomous---interactive-flag)
   - [Commit-Docs Guard Hook](#87-commit-docs-guard-hook)
@@ -808,21 +805,6 @@
 
 ---
 
-### 31. Update System
-
-**Command:** `/wsf-update`
-
-**Purpose:** Update WSF to the latest version with changelog preview.
-
-**Requirements:**
-- REQ-UPDATE-01: System MUST check for new versions via npm
-- REQ-UPDATE-02: System MUST display changelog for new version before updating
-- REQ-UPDATE-03: System MUST be runtime-aware and target the correct directory
-- REQ-UPDATE-04: System MUST back up locally modified files to `wsf-local-patches/`
-- REQ-UPDATE-05: `/wsf-reapply-patches` MUST restore local modifications after update
-
----
-
 ### 32. Settings Management
 
 **Command:** `/wsf-settings`
@@ -942,7 +924,6 @@ fix(03-01): correct auth token expiry
 **Requirements:**
 - REQ-HOOK-01: Statusline MUST display model, current task, directory, and context usage
 - REQ-HOOK-02: Context monitor MUST inject agent-facing warnings at threshold levels
-- REQ-HOOK-03: Update checker MUST run in background on session start
 - REQ-HOOK-04: All hooks MUST respect `CLAUDE_CONFIG_DIR` env var
 - REQ-HOOK-05: All hooks MUST include 3-second stdin timeout guard
 - REQ-HOOK-06: All hooks MUST fail silently on any error
@@ -950,7 +931,7 @@ fix(03-01): correct auth token expiry
 
 **Statusline Display:**
 ```
-[⬆ /wsf-update │] model │ [current task │] directory [█████░░░░░ 50%]
+model │ [current task │] directory [█████░░░░░ 50%]
 ```
 
 Color coding: <50% green, <65% yellow, <80% orange, ≥80% red with skull emoji
@@ -1834,18 +1815,6 @@ Test suite that scans all agent, workflow, and command files for embedded inject
 | Setting | Type | Default | Description |
 |---------|------|---------|-------------|
 | `response_language` | string | (none) | Language code for agent responses (e.g., `"pt"`, `"ko"`, `"ja"`) |
-
----
-
-### 84. Manual Update Procedure
-
-**Part of:** `docs/manual-update.md`
-
-**Purpose:** Document a manual update path for environments where `npx` is unavailable or npm publish is experiencing outages.
-
-**Requirements:**
-- REQ-MANUAL-01: Documentation MUST describe step-by-step manual update procedure
-- REQ-MANUAL-02: Procedure MUST work without npm access
 
 ---
 

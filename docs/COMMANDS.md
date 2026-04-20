@@ -900,15 +900,7 @@ Query, inspect, or refresh queryable codebase intelligence files stored in `.pla
 
 ---
 
-## Update Commands
-
-### `/wsf-update`
-
-Update WSF with changelog preview.
-
-```bash
-/wsf-update                         # Check for updates and install
-```
+## Patch Commands
 
 ### `/wsf-reapply-patches`
 
