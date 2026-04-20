@@ -598,7 +598,6 @@ You're never locked in. The system adapts.
 | `/wsf-progress` | Where am I? What's next? |
 | `/wsf-next` | Auto-detect state and run the next step |
 | `/wsf-help` | Show all commands and usage guide |
-| `/wsf-update` | Update WSF with changelog preview |
 | `/wsf-join-discord` | Join the WSF Discord community |
 | `/wsf-manager` | Interactive command center for managing multiple phases |
 

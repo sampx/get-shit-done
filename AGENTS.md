@@ -1,5 +1,7 @@
 # wsf — 项目规范
 
+WSF 项目是 GSD(get-shit-done 源码: labs/research/get-shit-done) 项目的 fork, 为本空间定义另一套开发工作流 (与 dev-flow 并行, 互不干扰)
+
 > **定位**：Claude Code / OpenCode / Gemini CLI / Codex 的 meta-prompting 与 spec-driven development 系统
 
 ---
@@ -81,7 +83,6 @@ bin/install.js
 │   ├── templates/               # 文档模板（PROJECT.md、ROADMAP.md 等）
 │   └── references/              # 引用资料（配置模式、git 集成等）
 ├── hooks/                       # Claude Code hooks
-│   ├── wsf-check-update.js      # 更新检查
 │   ├── wsf-context-monitor.js   # 上下文监控
 │   └── wsf-statusline.js        # 状态栏显示
 ├── scripts/

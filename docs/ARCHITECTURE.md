@@ -208,7 +208,6 @@ Runtime hooks that integrate with the host AI agent:
 |------|-------|---------|
 | `wsf-statusline.js` | `statusLine` | Displays model, task, directory, and context usage bar |
 | `wsf-context-monitor.js` | `PostToolUse` / `AfterTool` | Injects agent-facing context warnings at 35%/25% remaining |
-| `wsf-check-update.js` | `SessionStart` | Background check for new WSF versions |
 | `wsf-prompt-guard.js` | `PreToolUse` | Scans `.planning/` writes for prompt injection patterns (advisory) |
 | `wsf-workflow-guard.js` | `PreToolUse` | Detects file edits outside WSF workflow context (advisory, opt-in via `hooks.workflow_guard`) |
 | `wsf-read-guard.js` | `PreToolUse` | Advisory guard preventing Edit/Write on files not yet read in the session |
@@ -420,7 +419,6 @@ UI-SPEC.md (per phase) ───────────────────
 ├── hooks/
 │   ├── wsf-statusline.js           # Statusline hook
 │   ├── wsf-context-monitor.js      # Context warning hook
-│   └── wsf-check-update.js         # Update check hook
 ├── settings.json                   # Hook registrations
 └── VERSION                         # Installed version number
 ```
@@ -530,13 +528,9 @@ Runtime Engine (Claude Code / Gemini CLI)
     │   Reads: stdin (session JSON)
     │   Writes: stdout (formatted status), /tmp/claude-ctx-{session}.json (bridge)
     │
-    ├── PostToolUse/AfterTool event ──► wsf-context-monitor.js
-    │   Reads: stdin (tool event JSON), /tmp/claude-ctx-{session}.json (bridge)
-    │   Writes: stdout (hookSpecificOutput with additionalContext warning)
-    │
-    └── SessionStart event ──► wsf-check-update.js
-        Reads: VERSION file
-        Writes: ~/.claude/cache/wsf-update-check.json (spawns background process)
+    └── PostToolUse/AfterTool event ──► wsf-context-monitor.js
+        Reads: stdin (tool event JSON), /tmp/claude-ctx-{session}.json (bridge)
+        Writes: stdout (hookSpecificOutput with additionalContext warning)
 ```
 
 ### Context Monitor Thresholds
