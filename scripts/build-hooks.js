@@ -15,7 +15,6 @@ const DIST_DIR = path.join(HOOKS_DIR, 'dist');
 
 // Hooks to copy (pure Node.js, no bundling needed)
 const HOOKS_TO_COPY = [
-  'wsf-check-update.js',
   'wsf-context-monitor.js',
   'wsf-prompt-guard.js',
   'wsf-read-guard.js',
