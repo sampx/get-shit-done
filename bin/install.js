@@ -4427,7 +4427,7 @@ function uninstall(isGlobal, runtime = 'claude') {
   // 4. Remove WSF hooks
   const hooksDir = path.join(targetDir, 'hooks');
   if (fs.existsSync(hooksDir)) {
-    const wsfHooks = ['wsf-statusline.js', 'wsf-check-update.js', 'wsf-context-monitor.js', 'wsf-prompt-guard.js', 'wsf-read-guard.js', 'wsf-workflow-guard.js', 'wsf-session-state.sh', 'wsf-validate-commit.sh', 'wsf-phase-boundary.sh'];
+    const wsfHooks = ['wsf-statusline.js', 'wsf-context-monitor.js', 'wsf-prompt-guard.js', 'wsf-read-guard.js', 'wsf-workflow-guard.js', 'wsf-session-state.sh', 'wsf-validate-commit.sh', 'wsf-phase-boundary.sh'];
     let hookCount = 0;
     for (const hook of wsfHooks) {
       const hookPath = path.join(hooksDir, hook);
@@ -4479,7 +4479,7 @@ function uninstall(isGlobal, runtime = 'claude') {
     // Remove WSF hooks from settings — per-hook granularity to preserve
     // user hooks that share an entry with a WSF hook (#1755 followup)
     const isGsdHookCommand = (cmd) =>
-      cmd && (cmd.includes('wsf-check-update') || cmd.includes('wsf-statusline') ||
+      cmd && (cmd.includes('wsf-statusline') ||
         cmd.includes('wsf-session-state') || cmd.includes('wsf-context-monitor') ||
         cmd.includes('wsf-phase-boundary') || cmd.includes('wsf-prompt-guard') ||
         cmd.includes('wsf-read-guard') || cmd.includes('wsf-validate-commit') ||
@@ -5262,31 +5262,35 @@ function install(isGlobal, runtime = 'claude') {
       restoreUserArtifacts(legacyCommandsDir, savedLegacyArtifacts);
     }
   } else {
-    // Claude Code local: commands/wsf/ format — Claude Code reads local project
-    // commands from .claude/commands/wsf/, not .claude/skills/
+    // Claude Code local: install BOTH commands/wsf/ AND skills/wsf-*/
+    // Claude Code 2.x reads both from local .claude/ directory
+    const wsfSrc = path.join(src, 'commands', 'wsf');
+
+    // Install commands
     const commandsDir = path.join(targetDir, 'commands');
     fs.mkdirSync(commandsDir, { recursive: true });
-    const wsfSrc = path.join(src, 'commands', 'wsf');
-    const wsfDest = path.join(commandsDir, 'wsf');
-    copyWithPathReplacement(wsfSrc, wsfDest, pathPrefix, runtime, true, isGlobal);
-    if (verifyInstalled(wsfDest, 'commands/wsf')) {
-      const count = fs.readdirSync(wsfDest).filter(f => f.endsWith('.md')).length;
-      console.log(`  ${green}✓${reset} Installed ${count} commands to commands/wsf/`);
+    const wsfCmdDest = path.join(commandsDir, 'wsf');
+    copyWithPathReplacement(wsfSrc, wsfCmdDest, pathPrefix, runtime, true, isGlobal);
+    if (verifyInstalled(wsfCmdDest, 'commands/wsf')) {
+      const cmdCount = fs.readdirSync(wsfCmdDest).filter(f => f.endsWith('.md')).length;
+      console.log(`  ${green}✓${reset} Installed ${cmdCount} commands to commands/wsf/`);
     } else {
       failures.push('commands/wsf');
     }
 
-    // Clean up any stale skills/ from a previous local install
-    const staleSkillsDir = path.join(targetDir, 'skills');
-    if (fs.existsSync(staleSkillsDir)) {
-      const staleGsd = fs.readdirSync(staleSkillsDir, { withFileTypes: true })
-        .filter(e => e.isDirectory() && e.name.startsWith('wsf-'));
-      for (const e of staleGsd) {
-        fs.rmSync(path.join(staleSkillsDir, e.name), { recursive: true });
+    // Install skills
+    const skillsDir = path.join(targetDir, 'skills');
+    copyCommandsAsClaudeSkills(wsfSrc, skillsDir, 'wsf', pathPrefix, runtime, isGlobal);
+    if (fs.existsSync(skillsDir)) {
+      const skillCount = fs.readdirSync(skillsDir, { withFileTypes: true })
+        .filter(e => e.isDirectory() && e.name.startsWith('wsf-')).length;
+      if (skillCount > 0) {
+        console.log(`  ${green}✓${reset} Installed ${skillCount} skills to skills/`);
+      } else {
+        failures.push('skills/wsf-*');
       }
-      if (staleGsd.length > 0) {
-        console.log(`  ${green}✓${reset} Removed ${staleGsd.length} stale WSF skill(s) from skills/`);
-      }
+    } else {
+      failures.push('skills/wsf-*');
     }
   }
 
@@ -5443,11 +5447,6 @@ function install(isGlobal, runtime = 'claude') {
     }
   }
 
-  // Clear stale update cache so next session re-evaluates hook versions
-  // Cache lives at ~/.cache/wsf/ (see hooks/wsf-check-update.js line 35-36)
-  const updateCacheFile = path.join(os.homedir(), '.cache', 'wsf', 'wsf-update-check.json');
-  try { fs.unlinkSync(updateCacheFile); } catch (e) { /* cache may not exist yet */ }
-
   if (failures.length > 0) {
     console.error(`\n  ${yellow}Installation incomplete!${reset} Failed: ${failures.join(', ')}`);
     process.exit(1);
@@ -5595,9 +5594,6 @@ function install(isGlobal, runtime = 'claude') {
   const statuslineCommand = isGlobal
     ? buildHookCommand(targetDir, 'wsf-statusline.js')
     : 'node ' + localPrefix + '/hooks/wsf-statusline.js';
-  const updateCheckCommand = isGlobal
-    ? buildHookCommand(targetDir, 'wsf-check-update.js')
-    : 'node ' + localPrefix + '/hooks/wsf-check-update.js';
   const contextMonitorCommand = isGlobal
     ? buildHookCommand(targetDir, 'wsf-context-monitor.js')
     : 'node ' + localPrefix + '/hooks/wsf-context-monitor.js';
@@ -5619,38 +5615,8 @@ function install(isGlobal, runtime = 'claude') {
     }
   }
 
-  // Configure SessionStart hook for update checking (skip for opencode)
+  // Configure hooks for runtimes that support them (skip for opencode/kilo)
   if (!isOpencode && !isKilo) {
-    if (!settings.hooks) {
-      settings.hooks = {};
-    }
-    if (!settings.hooks.SessionStart) {
-      settings.hooks.SessionStart = [];
-    }
-
-    const hasGsdUpdateHook = settings.hooks.SessionStart.some(entry =>
-      entry.hooks && entry.hooks.some(h => h.command && h.command.includes('wsf-check-update'))
-    );
-
-    // Guard: only register if the hook file was actually installed (#1754).
-    // When hooks/dist/ is missing from the npm package (as in v1.32.0), the
-    // copy step produces no files but the registration step ran unconditionally,
-    // causing "hook error" on every tool invocation.
-    const checkUpdateFile = path.join(targetDir, 'hooks', 'wsf-check-update.js');
-    if (!hasGsdUpdateHook && fs.existsSync(checkUpdateFile)) {
-      settings.hooks.SessionStart.push({
-        hooks: [
-          {
-            type: 'command',
-            command: updateCheckCommand
-          }
-        ]
-      });
-      console.log(`  ${green}✓${reset} Configured update check hook`);
-    } else if (!hasGsdUpdateHook && !fs.existsSync(checkUpdateFile)) {
-      console.warn(`  ${yellow}⚠${reset}  Skipped update check hook — wsf-check-update.js not found at target`);
-    }
-
     // Configure post-tool hook for context window monitoring
     if (!settings.hooks[postToolEvent]) {
       settings.hooks[postToolEvent] = [];
