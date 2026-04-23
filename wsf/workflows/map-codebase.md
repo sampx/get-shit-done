@@ -101,16 +101,161 @@ Continue to spawn_agents.
 </step>
 
 <step name="detect_runtime_capabilities">
-Before spawning agents, detect whether the current runtime supports the `Task` tool for subagent delegation.
+Before spawning agents, detect which delegation tools are available for subagent execution.
 
-**How to detect:** Check if you have access to a `Task` tool (may be capitalized as `Task` or lowercase as `task` depending on runtime). If you do NOT have a `Task`/`task` tool (or only have tools like `browser_subagent` which is for web browsing, NOT code analysis):
+**Detection priority:**
 
-→ **Skip `spawn_agents` and `collect_confirmations`** — go directly to `sequential_mapping` instead.
+1. **wopal_task detection:** Check if `wopal_task` tool is available → set `DELEGATION_MODE=wopal_task`
+   - This indicates WopalSpace environment with async delegation support
+   - Provides bidirectional communication, progress monitoring, cancel/reply
 
-**CRITICAL:** Never use `browser_subagent` or `Explore` as a substitute for `Task`. The `browser_subagent` tool is exclusively for web page interaction and will fail for codebase analysis. If `Task` is unavailable, perform the mapping sequentially in-context.
+2. **Task tool detection:** Check if `Task` or `task` tool is available → set `DELEGATION_MODE=Task`
+   - Standard Claude Code / OpenCode native subagent tool
+   - Blocks until complete, returns result text
+
+3. **Inline fallback:** If neither tool exists → set `DELEGATION_MODE=inline`
+   - Execute mapping sequentially in current context
+   - No subagent spawning
+
+**CRITICAL:**
+- Never use `browser_subagent` or `Explore` as a substitute for Task/wopal_task
+- `browser_subagent` is exclusively for web page interaction, NOT code analysis
+- If only browser-based tools are available, perform mapping sequentially in-context
+
+**Routing:**
+- If `DELEGATION_MODE=wopal_task` → go to `spawn_agents_wopal_task`
+- If `DELEGATION_MODE=Task` → go to `spawn_agents`
+- If `DELEGATION_MODE=inline` → go to `sequential_mapping`
+
+See also: @~/.claude/wsf/references/runtime-detection.md
 </step>
 
-<step name="spawn_agents" condition="Task tool is available">
+<step name="spawn_agents_wopal_task" condition="wopal_task tool is available">
+Spawn 4 parallel wsf-codebase-mapper agents using wopal_task for async execution.
+
+**wopal_task parameters:**
+- `agent`: "wsf-codebase-mapper" (not `subagent_type`)
+- `description`: Task description for display
+- `prompt`: Full task instructions
+
+**Agent 1: Tech Focus**
+
+```
+wopal_task(
+  agent="wsf-codebase-mapper",
+  description="Map codebase tech stack",
+  prompt="Focus: tech
+
+**Project directory:** {PROJECT_DIR}
+All exploration and file operations must be scoped to this directory.
+
+Analyze this codebase for technology stack and external integrations.
+
+Write these documents to {PROJECT_DIR}/.planning/codebase/:
+- STACK.md - Languages, runtime, frameworks, dependencies, configuration
+- INTEGRATIONS.md - External APIs, databases, auth providers, webhooks
+
+Explore thoroughly. Write documents directly using templates. Return confirmation with ## MAPPING COMPLETE marker.
+
+${AGENT_SKILLS_MAPPER}${LANG_INSTRUCTION}"
+)
+```
+
+**Agent 2: Architecture Focus**
+
+```
+wopal_task(
+  agent="wsf-codebase-mapper",
+  description="Map codebase architecture",
+  prompt="Focus: arch
+
+**Project directory:** {PROJECT_DIR}
+All exploration and file operations must be scoped to this directory.
+
+Analyze this codebase architecture and directory structure.
+
+Write these documents to {PROJECT_DIR}/.planning/codebase/:
+- ARCHITECTURE.md - Pattern, layers, data flow, abstractions, entry points
+- STRUCTURE.md - Directory layout, key locations, naming conventions
+
+Explore thoroughly. Write documents directly using templates. Return confirmation with ## MAPPING COMPLETE marker.
+
+${AGENT_SKILLS_MAPPER}${LANG_INSTRUCTION}"
+)
+```
+
+**Agent 3: Quality Focus**
+
+```
+wopal_task(
+  agent="wsf-codebase-mapper",
+  description="Map codebase conventions",
+  prompt="Focus: quality
+
+**Project directory:** {PROJECT_DIR}
+All exploration and file operations must be scoped to this directory.
+
+Analyze this codebase for coding conventions and testing patterns.
+
+Write these documents to {PROJECT_DIR}/.planning/codebase/:
+- CONVENTIONS.md - Code style, naming, patterns, error handling
+- TESTING.md - Framework, structure, mocking, coverage
+
+Explore thoroughly. Write documents directly using templates. Return confirmation with ## MAPPING COMPLETE marker.
+
+${AGENT_SKILLS_MAPPER}${LANG_INSTRUCTION}"
+)
+```
+
+**Agent 4: Concerns Focus**
+
+```
+wopal_task(
+  agent="wsf-codebase-mapper",
+  description="Map codebase concerns",
+  prompt="Focus: concerns
+
+**Project directory:** {PROJECT_DIR}
+All exploration and file operations must be scoped to this directory.
+
+Analyze this codebase for technical debt, known issues, and areas of concern.
+
+Write this document to {PROJECT_DIR}/.planning/codebase/:
+- CONCERNS.md - Tech debt, bugs, security, performance, fragile areas
+
+Explore thoroughly. Write document directly using template. Return confirmation with ## MAPPING COMPLETE marker.
+
+${AGENT_SKILLS_MAPPER}${LANG_INSTRUCTION}"
+)
+```
+
+Continue to collect_confirmations_wopal_task.
+</step>
+
+<step name="collect_confirmations_wopal_task">
+Collect results from wopal_task agents using wopal_task_output.
+
+**For each task_id returned by wopal_task calls:**
+```
+wopal_task_output(task_id="{task_id}", section="text")
+```
+
+Check for completion markers:
+- `[WOPAL TASK COMPLETED]` or `## MAPPING COMPLETE` indicates success
+- `[WOPAL TASK FAILED]` indicates failure
+
+**Fallback spot-check:** If output doesn't contain marker, check disk:
+```
+ls {PROJECT_DIR}/.planning/codebase/{DOC}.md
+wc -l {PROJECT_DIR}/.planning/codebase/*.md
+```
+
+Once all confirmations collected, continue to verify_output.
+
+See also: @~/.claude/wsf/references/subagent-tool-adapter.md
+</step>
+
+<step name="spawn_agents" condition="Task tool is available (no wopal_task)">
 Spawn 4 parallel wsf-codebase-mapper agents.
 
 Use Task tool with `subagent_type="wsf-codebase-mapper"`, `model="{mapper_model}"`, and `run_in_background=true` for parallel execution.

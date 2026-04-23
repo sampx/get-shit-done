@@ -10,7 +10,25 @@ Read all files referenced by the invoking prompt's execution_context before star
 @~/.claude/wsf/references/gate-prompts.md
 @~/.claude/wsf/references/agent-contracts.md
 @~/.claude/wsf/references/gates.md
+@~/.claude/wsf/references/runtime-detection.md
+@~/.claude/wsf/references/subagent-tool-adapter.md
 </required_reading>
+
+<runtime_compatibility>
+**Subagent delegation priority:**
+1. **wopal_task** — preferred when available (WopalSpace / OpenCode with wopal-plugin)
+2. **Task** — fallback for Claude Code / OpenCode native
+3. **inline** — last resort when no delegation tools exist
+
+**Task() parameter notes:**
+- `isolation="worktree"` is NOT supported by OpenCode Task tool — use prompt directives instead
+- `run_in_background` is NOT supported by OpenCode Task tool — always synchronous
+
+**wopal_task usage:**
+- Use `agent` parameter (not `subagent_type`)
+- Completion detected via synthetic `[WOPAL TASK COMPLETED]` marker
+- Poll `wopal_task_output(task_id, section="text")` — avoid frequent checks (50+ sec intervals)
+</runtime_compatibility>
 
 <available_agent_types>
 Valid WSF subagent types (use exact names — do not fall back to 'general-purpose'):
@@ -324,6 +342,8 @@ ${AGENT_SKILLS_RESEARCHER}
 Write to: {phase_dir}/{phase_num}-RESEARCH.md
 </output>
 ```
+
+**Delegation mode:** Check `wopal_task` availability first. If available, use `wopal_task(agent="wsf-phase-researcher", ...)`. Otherwise use `Task(subagent_type="wsf-phase-researcher", ...)`.
 
 ```
 Task(
@@ -670,6 +690,8 @@ Every task MUST include these fields — they are NOT optional:
 - [ ] must_haves derived from phase goal
 </quality_gate>
 ```
+
+**Delegation mode:** Check `wopal_task` availability first. If available, use `wopal_task(agent="wsf-planner", ...)`. Otherwise use `Task(subagent_type="wsf-planner", ...)`.
 
 ```
 Task(

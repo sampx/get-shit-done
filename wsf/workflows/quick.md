@@ -16,6 +16,20 @@ Granular flags are composable: `--discuss --research --validate` gives the same 
 Read all files referenced by the invoking prompt's execution_context before starting.
 </required_reading>
 
+<runtime_compatibility>
+**Subagent delegation priority:**
+1. **wopal_task** — preferred when available (WopalSpace / OpenCode with wopal-plugin)
+2. **Task** — fallback for Claude Code / OpenCode native
+3. **inline** — last resort when no delegation tools exist
+
+**When spawning subagents:**
+- If `wopal_task` is available → use `wopal_task(agent="...", description="...", prompt="...")`
+- If only `Task` is available → use `Task(subagent_type="...", description="...", prompt="...")`
+- Completion: wopal_task uses `[WOPAL TASK COMPLETED]` marker, Task uses `## XXX COMPLETE`
+
+See also: @~/.claude/wsf/references/runtime-detection.md, @~/.claude/wsf/references/subagent-tool-adapter.md
+</runtime_compatibility>
+
 <available_agent_types>
 Valid WSF subagent types (use exact names — do not fall back to 'general-purpose'):
 - wsf-phase-researcher — Researches technical approaches for a phase
@@ -330,6 +344,8 @@ Display banner:
 ◆ Investigating approaches for: ${DESCRIPTION}
 ```
 
+**Delegation mode:** Check `wopal_task` availability first. If available, use `wopal_task(agent="wsf-phase-researcher", ...)`. Otherwise use `Task(subagent_type="wsf-phase-researcher", ...)`.
+
 Spawn a single focused researcher (not 4 parallel researchers like full phases — quick tasks need targeted research, not broad domain surveys):
 
 ```
@@ -485,6 +501,8 @@ ${DISCUSS_MODE ? '- Context compliance: Does the plan honor locked decisions fro
 </expected_output>
 ```
 
+**Delegation mode:** Check `wopal_task` availability first. If available, use `wopal_task(agent="wsf-plan-checker", ...)`. Otherwise use `Task(subagent_type="wsf-plan-checker", ...)`.
+
 ```
 Task(
   prompt=checker_prompt,
@@ -530,6 +548,8 @@ Return what changed.
 </instructions>
 ```
 
+**Delegation mode:** Check `wopal_task` availability first. If available, use `wopal_task(agent="wsf-planner", ...)`. Otherwise use `Task(subagent_type="wsf-planner", ...)`.
+
 ```
 Task(
   prompt=revision_prompt,
@@ -555,6 +575,8 @@ Capture current HEAD before spawning (used for worktree branch check):
 ```bash
 EXPECTED_BASE=$(git rev-parse HEAD)
 ```
+
+**Delegation mode:** Check `wopal_task` availability first. If available, use `wopal_task(agent="wsf-executor", ...)` for async execution. Otherwise use `Task(subagent_type="wsf-executor", ...)`.
 
 Spawn wsf-executor with plan reference:
 

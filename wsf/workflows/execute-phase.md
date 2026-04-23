@@ -8,19 +8,27 @@ Orchestrator coordinates, not executes. Each subagent loads the full execute-pla
 
 <runtime_compatibility>
 **Subagent spawning is runtime-specific:**
-- **Claude Code:** Uses `Task(subagent_type="wsf-executor", ...)` — blocks until complete, returns result
-- **Copilot:** Subagent spawning does not reliably return completion signals. **Default to
-  sequential inline execution**: read and follow execute-plan.md directly for each plan
-  instead of spawning parallel agents. Only attempt parallel spawning if the user
-  explicitly requests it — and in that case, rely on the spot-check fallback in step 3
-  to detect completion.
-- **Other runtimes:** If `Task`/`task` tool is unavailable, use sequential inline execution as the
-  fallback. Check for tool availability at runtime rather than assuming based on runtime name.
 
-**Fallback rule:** If a spawned agent completes its work (commits visible, SUMMARY.md exists) but
-the orchestrator never receives the completion signal, treat it as successful based on spot-checks
-and continue to the next wave/plan. Never block indefinitely waiting for a signal — always verify
-via filesystem and git state.
+**Detection priority:**
+1. **wopal_task** — WopalSpace / OpenCode with wopal-plugin → native async delegation with bidirectional communication
+2. **Task** — Claude Code / OpenCode native → blocks until complete, returns result
+3. **inline** — Copilot / Gemini CLI / Codex / no delegation tools → sequential execution
+
+**Claude Code:** Uses `Task(subagent_type="wsf-executor", ...)` — blocks until complete, returns result
+
+**OpenCode with wopal-plugin:** Uses `wopal_task(agent="wsf-executor", ...)` — async launch, poll with `wopal_task_output`
+- Completion detected via: `[WOPAL TASK COMPLETED]` synthetic marker or spot-check fallback
+- Progress monitored via: `wopal_task_output(section="text")` polling (wait for notification, avoid frequent checks)
+
+**Copilot:** Subagent spawning does not reliably return completion signals. **Default to sequential inline execution**: read and follow execute-plan.md directly for each plan instead of spawning parallel agents. Only attempt parallel spawning if the user explicitly requests it — and in that case, rely on the spot-check fallback in step 3 to detect completion.
+
+**Other runtimes:** If neither `wopal_task` nor `Task`/`task` tool is available, use sequential inline execution as the fallback. Check for tool availability at runtime rather than assuming based on runtime name.
+
+**Fallback rule:** If a spawned agent completes its work (commits visible, SUMMARY.md exists) but the orchestrator never receives the completion signal, treat it as successful based on spot-checks and continue to the next wave/plan. Never block indefinitely waiting for a signal — always verify via filesystem and git state.
+
+See also:
+- @~/.claude/wsf/references/runtime-detection.md
+- @~/.claude/wsf/references/subagent-tool-adapter.md
 </runtime_compatibility>
 
 <required_reading>
@@ -99,13 +107,25 @@ When `CONTEXT_WINDOW >= 500000` (1M-class models), subagent prompts include rich
 
 When `parallelization` is false, plans within a wave execute sequentially.
 
-**Runtime detection for Copilot:**
-Check if the current runtime is Copilot by testing for the `@wsf-executor` agent pattern
-or absence of the `Task()` subagent API. If running under Copilot, force sequential inline
-execution regardless of the `parallelization` setting — Copilot's subagent completion
-signals are unreliable (see `<runtime_compatibility>`). Set `COPILOT_SEQUENTIAL=true`
-internally and skip the `execute_waves` step in favor of `check_interactive_mode`'s
-inline path for each plan.
+**Delegation capability detection:**
+Before spawning agents, detect which delegation tools are available:
+
+1. **wopal_task detection:** Check if `wopal_task` tool is available → set `DELEGATION_MODE=wopal_task`
+   - WopalSpace environment with async delegation + bidirectional communication
+   - Completion detected via synthetic `[WOPAL TASK COMPLETED]` marker or spot-check
+   - Progress monitored via `wopal_task_output(task_id, section="text")`
+
+2. **Task tool detection:** Check if `Task` or `task` tool is available → set `DELEGATION_MODE=Task`
+   - Standard Claude Code / OpenCode native subagent
+   - Blocks until complete, returns result text with completion markers
+
+3. **Inline fallback:** If neither exists → set `DELEGATION_MODE=inline`
+   - Sequential execution without subagent spawning
+
+**Copilot special handling:**
+If Copilot runtime is detected (by absence of reliable Task signals or `@wsf-executor` pattern), force `COPILOT_SEQUENTIAL=true` and use inline path regardless of `DELEGATION_MODE`. Copilot's subagent completion signals are unreliable.
+
+See also: @~/.claude/wsf/references/runtime-detection.md
 
 **REQUIRED — Sync chain flag with intent.** If user invoked manually (no `--auto`), clear the ephemeral chain flag from any previous interrupted `--auto` chain. This prevents stale `_auto_chain_active: true` from causing unwanted auto-advance. This does NOT touch `workflow.auto_advance` (the user's persistent settings preference). You MUST execute this bash block before any config reads:
 ```bash
@@ -302,11 +322,46 @@ Execute each selected wave in sequence. Within a wave: parallel if `PARALLELIZAT
 
 3. **Spawn executor agents:**
 
-   Pass paths only — executors read files themselves with their fresh context window.
-   For 200k models, this keeps orchestrator context lean (~10-15%).
-   For 1M+ models (Opus 4.6, Sonnet 4.6), richer context can be passed directly.
+    Pass paths only — executors read files themselves with their fresh context window.
+    For 200k models, this keeps orchestrator context lean (~10-15%).
+    For 1M+ models (Opus 4.6, Sonnet 4.6), richer context can be passed directly.
 
-   **Worktree mode** (`USE_WORKTREES` is not `false`):
+    **Delegation mode routing:**
+    - If `DELEGATION_MODE=wopal_task`: Use `wopal_task(agent="wsf-executor", ...)` — async launch
+    - If `DELEGATION_MODE=Task`: Use `Task(subagent_type="wsf-executor", ...)` — blocks
+    - If `DELEGATION_MODE=inline`: Execute plan directly (no spawning)
+
+    ---
+
+    **wopal_task mode (async):**
+    
+    Launch executor with wopal_task:
+    ```
+    wopal_task(
+      agent="wsf-executor",
+      description="Execute plan {plan_number} of phase {phase_number}",
+      prompt="
+        <objective>
+        Execute plan {plan_number} of phase {phase_number}-{phase_name}.
+        Commit each task atomically. Create SUMMARY.md.
+        Return confirmation with ## EXECUTION COMPLETE marker.
+        </objective>
+
+        {prompt content continues...}
+      "
+    )
+    ```
+    
+    Completion detection:
+    - Poll `wopal_task_output(task_id, section="text")` for `[WOPAL TASK COMPLETED]` or `## EXECUTION COMPLETE`
+    - Fallback: spot-check SUMMARY.md + git commits
+    - Do NOT poll frequently — wait for notification or 50+ second intervals
+    
+    ---
+
+    **Task mode (blocking):**
+
+    **Worktree mode** (`USE_WORKTREES` is not `false`):
 
    Before spawning, capture the current HEAD:
    ```bash
