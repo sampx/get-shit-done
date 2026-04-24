@@ -1599,6 +1599,99 @@ function cmdInitPrBranch(cwd, raw) {
   output(JSON.stringify(result, null, 2), raw, result);
 }
 
+function cmdInitAddPhase(cwd, raw) {
+  const config = loadConfig(cwd);
+
+  const result = {
+    roadmap_exists: fs.existsSync(path.join(planningDir(cwd), 'ROADMAP.md')),
+    commit_docs: config.commit_docs,
+  };
+
+  output(withProjectRoot(cwd, result), raw);
+}
+
+function cmdInitInsertPhase(cwd, raw) {
+  const config = loadConfig(cwd);
+
+  const result = {
+    roadmap_exists: fs.existsSync(path.join(planningDir(cwd), 'ROADMAP.md')),
+    commit_docs: config.commit_docs,
+  };
+
+  output(withProjectRoot(cwd, result), raw);
+}
+
+function cmdInitRemovePhase(cwd, raw) {
+  const config = loadConfig(cwd);
+  const phase = null; // parsed from args[2] in wsf-tools.cjs
+
+  const result = {
+    roadmap_exists: fs.existsSync(path.join(planningDir(cwd), 'ROADMAP.md')),
+    commit_docs: config.commit_docs,
+    phase,
+  };
+
+  output(withProjectRoot(cwd, result), raw);
+}
+
+function cmdInitCompleteMilestone(cwd, raw) {
+  const config = loadConfig(cwd);
+  const milestone = getMilestoneInfo(cwd);
+
+  const phasesDir = path.join(planningDir(cwd), 'phases');
+  let phaseDirCount = 0;
+  try {
+    if (fs.existsSync(phasesDir)) {
+      phaseDirCount = fs.readdirSync(phasesDir, { withFileTypes: true })
+        .filter(entry => entry.isDirectory())
+        .length;
+    }
+  } catch { /* intentionally empty */ }
+
+  const result = {
+    milestone_version: milestone.version,
+    milestone_name: milestone.name,
+    roadmap_exists: fs.existsSync(path.join(planningDir(cwd), 'ROADMAP.md')),
+    project_exists: pathExistsInternal(cwd, '.planning/PROJECT.md'),
+    state_exists: fs.existsSync(path.join(planningDir(cwd), 'STATE.md')),
+    phase_dir_count: phaseDirCount,
+    commit_docs: config.commit_docs,
+  };
+
+  output(withProjectRoot(cwd, result), raw);
+}
+
+function cmdInitAuditUat(cwd, raw) {
+  const config = loadConfig(cwd);
+
+  // Parse phase list from current milestone's ROADMAP.md
+  const phases = [];
+  const roadmapPath = path.join(planningDir(cwd), 'ROADMAP.md');
+  if (fs.existsSync(roadmapPath)) {
+    try {
+      const rawContent = fs.readFileSync(roadmapPath, 'utf-8');
+      const content = extractCurrentMilestone(rawContent, cwd);
+      const phasePattern = /#{2,4}\s*Phase\s+(\d+[A-Z]?(?:\.\d+)*)\s*:\s*([^\n]+)/gi;
+      let match;
+      while ((match = phasePattern.exec(content)) !== null) {
+        phases.push({
+          number: match[1],
+          name: match[2].replace(/\(INSERTED\)/i, '').trim(),
+        });
+      }
+    } catch { /* intentionally empty */ }
+  }
+
+  const result = {
+    roadmap_exists: fs.existsSync(roadmapPath),
+    phases,
+    phase_count: phases.length,
+    commit_docs: config.commit_docs,
+  };
+
+  output(withProjectRoot(cwd, result), raw);
+}
+
 function cmdInitUndo(cwd, raw) {
   const config = loadConfig(cwd);
   const result = withProjectRoot(cwd, {
@@ -1628,6 +1721,11 @@ module.exports = {
   cmdInitHealth,
   cmdInitPrBranch,
   cmdInitUndo,
+  cmdInitAddPhase,
+  cmdInitInsertPhase,
+  cmdInitRemovePhase,
+  cmdInitCompleteMilestone,
+  cmdInitAuditUat,
   detectChildRepos,
   buildAgentSkillsBlock,
   cmdAgentSkills,

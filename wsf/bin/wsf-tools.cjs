@@ -144,6 +144,11 @@
  *   init milestone-op                  All context for milestone operations
  *   init map-codebase                  All context for map-codebase workflow
  *   init progress                      All context for progress workflow
+ *   init add-phase                     All context for add-phase workflow
+ *   init insert-phase                  All context for insert-phase workflow
+ *   init remove-phase                  All context for remove-phase workflow
+ *   init complete-milestone            All context for complete-milestone workflow
+ *   init audit-uat                     All context for audit-uat workflow
  *
  * Documentation:
  *   docs-init                            Project context for docs-update workflow
@@ -902,8 +907,23 @@ async function runCommand(command, args, cwd, raw, defaultValue) {
         case 'undo':
           init.cmdInitUndo(cwd, raw);
           break;
+        case 'add-phase':
+          init.cmdInitAddPhase(cwd, raw);
+          break;
+        case 'insert-phase':
+          init.cmdInitInsertPhase(cwd, raw);
+          break;
+        case 'remove-phase':
+          init.cmdInitRemovePhase(cwd, raw);
+          break;
+        case 'complete-milestone':
+          init.cmdInitCompleteMilestone(cwd, raw);
+          break;
+        case 'audit-uat':
+          init.cmdInitAuditUat(cwd, raw);
+          break;
         default:
-          error(`Unknown init workflow: ${workflow}\nAvailable: execute-phase, plan-phase, new-project, new-milestone, quick, resume, verify-work, phase-op, todos, milestone-op, map-codebase, progress, manager, stats, health, pr-branch, undo, new-workspace, list-workspaces, remove-workspace`);
+          error(`Unknown init workflow: ${workflow}\nAvailable: execute-phase, plan-phase, new-project, new-milestone, quick, resume, verify-work, phase-op, todos, milestone-op, map-codebase, progress, manager, stats, health, pr-branch, undo, new-workspace, list-workspaces, remove-workspace, add-phase, insert-phase, remove-phase, complete-milestone, audit-uat`);
       }
       break;
     }
