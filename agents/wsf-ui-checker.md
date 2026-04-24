@@ -215,7 +215,7 @@ Status: {APPROVED / BLOCKED}
 - **BLOCKED** if ANY dimension is BLOCK → plan-phase must not run
 - **APPROVED** if all dimensions are PASS or FLAG → planning can proceed
 
-If APPROVED: update UI-SPEC.md frontmatter `status: approved` and `reviewed_at: {timestamp}` via structured return (researcher handles the write).
+If APPROVED: return structured verdict to orchestrator. Orchestrator will update frontmatter status and reviewed_at.
 
 </verdict_format>
 

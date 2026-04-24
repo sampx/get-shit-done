@@ -203,7 +203,13 @@ Task(
 ## 8. Handle Checker Return
 
 **If `## UI-SPEC VERIFIED`:**
-Display dimension results. Proceed to step 10.
+Display dimension results.
+
+Update UI-SPEC.md frontmatter via Edit tool:
+- `status: approved`
+- `reviewed_at: {current timestamp}`
+
+Proceed to step 10.
 
 **If `## ISSUES FOUND`:**
 Display blocking issues. Proceed to step 9.
